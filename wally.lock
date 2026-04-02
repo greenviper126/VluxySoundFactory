@@ -3,11 +3,6 @@
 registry = "test"
 
 [[package]]
-name = "greenviper126/vluxysoundfactory"
+name = "greenviper126/vluxysf"
 version = "0.1.0"
-dependencies = [["trove", "sleitnick/trove@1.5.1"]]
-
-[[package]]
-name = "sleitnick/trove"
-version = "1.5.1"
 dependencies = []

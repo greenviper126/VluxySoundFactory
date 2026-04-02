@@ -6,11 +6,7 @@ license = "MIT"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
-include = [
-    "VluxySF",
-    "default.project.json",
-    "LICENSE"
-]
+include = ["VluxySF", "default.project.json", "LICENSE"]
 
 exclude = [
     "assets",
@@ -39,6 +35,5 @@ exclude = [
 [dependencies]
 
 #main:
-trove = "sleitnick/trove@1.5.0"
 
 #optional:

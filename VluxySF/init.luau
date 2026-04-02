@@ -14,9 +14,6 @@ local internals = script.Internals
 local Properties = require(utility.Properties)
 local Types = require(utility.Types)
 
-local Client = require(internals.Client)
-local Server = require(internals.Server)
-
 local soundData: Types.SoundData
 
 local Random = Random.new()
@@ -54,6 +51,7 @@ local Sounds = {}
 	Injects the source folder used to build sound data and sets up server-side structures.
 ]=]
 function Sounds._initServer(soundFolder: Configuration | Folder)
+	local Server = require(internals.Server)
 	Server._initServer(soundFolder)
 
 	soundData = Server.GetSoundData()
@@ -69,6 +67,7 @@ end
 	Sets up client-side structures and retrieves sound data from the server.
 ]=]
 function Sounds._initClient()
+	local Client = require(internals.Client)
 	Client._initClient()
 
 	soundData = Client.GetSoundData()
