@@ -1,17 +1,17 @@
-title = "VluxySoundFactory"
-gitRepoUrl = "https://github.com/greenviper126/VluxySoundFactory"
+title = "VluxySF"
+gitRepoUrl = "https://github.com/greenviper126/VluxySF"
 gitSourceBranch = "master"
 changelog = true
 
 [docusaurus]
 organizationName = "vlux"
-projectName = "VluxySoundFactory"
+projectName = "VluxySF"
 deploymentBranch = "gh-pages"
 tagline = "The extensible command console for Roblox developers"
 titleDelimiter = "•"
 
 url = "https://greenviper126.github.io"
-baseUrl = "/TheLaundryShift/"
+baseUrl = "/VluxySF/"
 
 # TODO: Remove when releasing new website
 noIndex = true
