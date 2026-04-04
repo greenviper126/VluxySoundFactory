@@ -1,7 +1,7 @@
 <div align="center">
 	<img src="assets/VluxIcon.png" alt="Cmdr" height="150" />
 	<br/>
-	<a href="https://discord.gg/Ebbp9UgBUD"><img src="https://img.shields.io/discord/425800792679645204.svg?label=discord" /></a>
+	<a href="https://discord.gg/Ebbp9UgBUD"><img src="https://img.shields.io/discord/757104089984270346.svg?label=discord" /></a>
 	<p><a href="https://greenviper126.github.io/VluxySF/">View Docs</a></p>
 </div>
 
