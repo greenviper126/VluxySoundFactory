@@ -38,23 +38,37 @@ The Package folder created by Wally should be synced into Roblox Studio through 
 }
 ```
 
-## Usage Example
-This needs to be updated!!!!!!!!!
+## Setup
+In order to start using VluxySF you need to initialize the package on both the server and client.
 
-The installed dependencies can now be used in scripts, such as the following:
+### SoundFolder
+
+In order to setup the soundFolder see this page [Configuring Sounds](./soundSetup)
+
+### Server
+
+On the server you are required to inject the config/folder location of all your instanced sounds. This Folder should be located on the server.
+
 ```lua
--- Reference folder with packages:
-local Packages = game:GetService("ReplicatedStorage").Packages
+local ServerStorage = game:GetService("ServerStorage")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Require the utility modules:
-local Signal = require(Packages.Signal)
-local TableUtil = require(Packages.TableUtil)
+local VluxySF = require(ReplicatedStorage.Packages.VluxySF)
 
--- Use the modules:
-local signal = Signal.new()
-signal:Connect(function(data)
-	local randomizedData = TableUtil.Shuffle(data)
-	print(randomizedData)
-end)
-signal:Fire({"A", "B", "C"})
+--folder/config of the actual sounds you want to use.
+local soundFolder = ServerStorage:FindFirstChild("SOUNDS")
+
+--initialize the server
+VluxySF._initServer(soundFolder)
+```
+
+### Client
+
+```lua
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local VluxySF = require(ReplicatedStorage.Packages.VluxySF)
+
+--initialize the client
+VluxySF._initClient()
 ```
