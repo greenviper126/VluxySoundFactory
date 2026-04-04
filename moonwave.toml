@@ -1,15 +1,16 @@
 title = "VluxySF"
 gitRepoUrl = "https://github.com/greenviper126/VluxySF"
 
-
 changelog = true
 gitSourceBranch = "master"
+
+classOrder = ["VluxySF"]
 
 [docusaurus]
 organizationName = "vlux"
 projectName = "VluxySF"
 deploymentBranch = "gh-pages"
-tagline = "The extensible command console for Roblox developers"
+tagline = "Sound fetching system with a focus on simplicity and saving memory!"
 
 url = "https://greenviper126.github.io"
 baseUrl = "/VluxySF/"
@@ -17,3 +18,14 @@ baseUrl = "/VluxySF/"
 [home]
 enabled = true
 includeReadme = false
+
+#navbar
+[[navbar.items]]
+href = "https://discord.gg/Ebbp9UgBUD"
+label = "Discord"
+position = "right"
+
+#features
+[[home.features]]
+title = "Easy to Use"
+description = "VluxySF is designed to be simple and intuitive, making it easy for to integrate it into their projects."
