@@ -7,7 +7,7 @@ gitSourceBranch = "master"
 classOrder = ["VluxySF"]
 
 [docusaurus]
-organizationName = "vlux"
+organizationName = "VluxEntertainment(Partnership)"
 projectName = "VluxySF"
 deploymentBranch = "gh-pages"
 tagline = "Sound fetching system with a focus on simplicity and saving memory!"
@@ -27,5 +27,13 @@ position = "right"
 
 #features
 [[home.features]]
-title = "Easy to Use"
-description = "VluxySF is designed to be simple and intuitive, making it easy for to integrate it into their projects."
+title = "Easy sound fetching"
+description = "Define sounds once and play them by name anywhere, with automatic sound group handling and no repetitive manual wiring."
+
+[[home.features]]
+title = "Clean memory behavior"
+description = "VluxySF stores lightweight sound definitions and creates sounds on demand, so you avoid keeping large pre-instanced sound trees around."
+
+[[home.features]]
+title = "Extra tooling"
+description = "VluxySF provides additional tools and utilities to enhance your sound management workflow."
