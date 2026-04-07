@@ -8,8 +8,9 @@ VluxySF._initClient()
 
 --tests
 
-print(VluxySF.GetSoundGroup("Game"), VluxySF.GetSoundGroups(), VluxySF.GetSoundGroupNames())
-print(VluxySF.GetSoundLocations(), VluxySF.GetSoundDefinitions())
+print(VluxySF._getSchema())
+--print(VluxySF.GetSoundGroup("Game"), VluxySF.GetSoundGroups(), VluxySF.GetSoundGroupNames())
+--print(VluxySF.GetSoundLocations(), VluxySF.GetSoundDefinitions())
 
 --sound class
 local endingMusic = VluxySF.Create("Music/Ending/EndingMusic")
@@ -20,19 +21,17 @@ local endingMusic = VluxySF.Create("Music/Ending/EndingMusic")
 	end)
 
 task.wait(5)
-print(1)
 
 --direct sound manipulation
 local ambience1 = VluxySF.ConstructSoundFromName("Music/Mystification 2")
 if ambience1 then
-	print(VluxySF.GetEstimatedPlayLength(ambience1))
+	--print(VluxySF.GetEstimatedPlayLength(ambience1))
 	ambience1:Play()
 
 	task.wait(3)
 
-	print(VluxySF.GetEstimatedPlayLength(ambience1))
+	--print(VluxySF.GetEstimatedPlayLength(ambience1))
 end
-print(2)
 
 local h = endingMusic:Clone()
 h._sound.Name = "Hello"
@@ -40,17 +39,15 @@ h._sound.Name = "Hello"
 h:SetPlaybackSpeed(3):Play()
 
 task.wait(5)
-print(3)
+
 endingMusic:Cleanup()
 
 task.wait(5)
-print(4)
 
 local f = h:Extend()
 f._sound.Name = "HellNO"
 f:Play()
 
 task.wait(5)
-print(5)
 
 h:Cleanup()

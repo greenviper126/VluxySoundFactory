@@ -11,9 +11,7 @@
 local utility = script.Utility
 local internals = script.Internals
 
-local Properties = require(utility.Properties)
 local Tables = require(utility.Tables)
-local Trove = require(utility.Trove)
 
 local SoundEntity = require(script.SoundEntity)
 local SoundTools = require(script.SoundTools)
@@ -71,17 +69,6 @@ export type SoundDefinitions = Types.SoundDefinitions
 	Defines the type of a sound group instance.
 ]=]
 export type SoundGroups = Types.SoundGroups
-
---[=[
-	@interface SoundVariance
-	@within VluxySF
-
-	.PlaybackSpeed () -> number -- A callback that returns a multiplier for the sound's playback speed.
-	.Volume () -> number -- A callback that returns a multiplier for the sound's volume.
-
-	Defines the variance for sound properties, allowing for dynamic changes to playback speed and volume.
-]=]
-export type SoundVariance = Types.SoundVariance
 
 --[=[
 	@interface SoundSchema
@@ -146,11 +133,13 @@ end
 
 	@client
 
+	@param timeout number? -- optional timeout for preloading sounds, default is 5 seconds
+
 	Sets up client-side structures and retrieves sound data from the server.
 ]=]
-function Sounds._initClient()
+function Sounds._initClient(timeout: number?)
 	local Client = require(internals.Client)
-	Client._initClient()
+	Client._initClient(timeout)
 
 	--fetch
 	soundSchema = Client.GetSoundSchema()
@@ -158,6 +147,19 @@ function Sounds._initClient()
 
 	-- class for manipulating sounds
 	SoundEntity._injectSoundSchema(soundSchema)
+end
+
+--[=[
+	@within VluxySF
+
+	@private
+
+	@return SoundSchema -- The internal sound schema used by the system.
+
+	Provides access to the internal sound schema.
+]=]
+function Sounds._getSchema()
+	return soundSchema
 end
 
 --[=[
@@ -257,6 +259,21 @@ end
 ]=]
 function Sounds.ConstructSoundFromDefinition(soundDefinition: SoundDefinition): Sound
 	return SoundTools.CreateSound(soundSchema, soundDefinition)
+end
+
+--[=[
+	@within VluxySF
+
+	@param sound Sound -- The sound instance to convert into a sound definition.
+
+	@return SoundDefinition -- A sound definition representing the provided sound instance.
+
+	Creates a sound definition from a Roblox `Sound` instance by serializing its properties and valid child effects.
+
+	This does not get added to the definitions list.
+]=]
+function Sounds.CreateSoundDefinitionFromSound(sound: Sound): SoundDefinition
+	return SoundTools.CreateSoundDefinition(sound)
 end
 
 --[=[

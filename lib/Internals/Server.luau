@@ -44,6 +44,7 @@ local soundSchema: Types.SoundSchema = {
 	SoundGroupContainer = soundGroupContainerFolder,
 	SoundGroups = {},
 	SoundDefinitions = {},
+	PreloadIds = {},
 }
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -72,12 +73,12 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 --[[
-	Registers a sound by converting it into a sound definition and adding it to the appropriate sound group in the sound schema.
+	Registers a sound instance by converting it into a sound definition and associating it with a sound group.
 
 	@param sound Sound - The sound instance to register.
-	@param soundGroup string - The name of the sound group to add the sound definition to.
+	@param soundGroup string - The name of the sound group to associate the sound with.
 
-	@return boolean, string? - A boolean indicating success, and an optional error message if registration failed.
+	@return boolean, Types.SoundDefinition? - A boolean indicating success, and the resulting sound definition if successful.
 ]]
 local function registerSound(sound: Sound, soundGroup: string)
 	return pcall(function()
@@ -154,6 +155,21 @@ local function setGroupedSounds(soundDefinitions: Types.SoundDefinitions, childF
 end
 
 --[[
+	Sets preload sound ids from a folder into the sound definitions.
+
+	@param childFolder Instance - The folder containing the sounds to add.
+]]
+local function setPreloadIds(childFolder: Instance)
+	for _, instance in pairs(childFolder:GetDescendants()) do
+		if not instance:IsA("Sound") then
+			continue
+		end
+
+		table.insert(soundSchema.PreloadIds, instance.SoundId)
+	end
+end
+
+--[[
     Creates sound definitions for all sounds in the given folder and organizes them by group.
 
     @param soundFolder Configuration - The folder containing sound group folders and unattached sounds.
@@ -172,6 +188,12 @@ local function createSoundDefinitions(soundFolder: Configuration)
 		soundSchema.SoundGroups[childFolder.Name] = soundGroup
 
 		setGroupedSounds(soundDefinitions, childFolder)
+	end
+
+	--set preload
+	local preloadFolders = soundFolder:QueryDescendants("#_Preload")
+	for _, preloadFolder in ipairs(preloadFolders) do
+		setPreloadIds(preloadFolder)
 	end
 
 	soundSchema.SoundDefinitions = soundDefinitions

@@ -21,11 +21,6 @@ export type SoundDefinitions = Dictionary<SoundDefinition>
 
 export type SoundGroups = Dictionary<SoundGroup>
 
-export type SoundVariance = {
-	PlaybackSpeed: () -> number,
-	Volume: () -> number,
-}
-
 ------------------------------------------------------------------------------------------------------------------------
 
 export type SoundSchema = {
@@ -33,6 +28,7 @@ export type SoundSchema = {
 	SoundGroupContainer: Configuration,
 	SoundGroups: SoundGroups,
 	SoundDefinitions: SoundDefinitions,
+	PreloadIds: { string },
 }
 
 ------------------------------------------------------------------------------------------------------------------------

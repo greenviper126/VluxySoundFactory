@@ -3,8 +3,9 @@
 local Properties = require(script.Parent.Utility.Properties)
 local Types = require(script.Parent.Types)
 
-local blankSound = Instance.new("Sound", script)
+local blankSound = Instance.new("Sound")
 blankSound.Name = "BlankSound"
+blankSound.Parent = script
 
 local SoundTools = {}
 

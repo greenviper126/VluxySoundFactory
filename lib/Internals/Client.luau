@@ -2,6 +2,7 @@
 
 ------------------------------------------------------------------------------------------------------------------------
 
+local ContentProvider = game:GetService("ContentProvider")
 local RunService = game:GetService("RunService")
 
 local utility = script.Parent.Parent.Utility
@@ -38,6 +39,69 @@ local function getDataForClient(): Types.SoundSchema
 	end
 end
 
+--[[
+	Extracts preload sound ids from the schema and preloads them.
+
+	@param timeout number? -- Optional timeout for preloading sounds, default is 5 seconds.
+]]
+local function setPreloadSounds(timeout: number?)
+	if #soundSchema.PreloadIds == 0 then
+		return
+	end
+
+	local preloadSounds = {}
+	local realTimeout = timeout or 5
+
+	local complete = Instance.new("BindableEvent")
+	complete.Name = "PreloadComplete"
+	complete.Parent = script
+
+	--we add the ids to sound instances because preload fails will raw id for some reason.
+	for _, soundId in ipairs(soundSchema.PreloadIds) do
+		local newSound = Instance.new("Sound")
+		newSound.SoundId = soundId
+		newSound.Name = "PreloadSound"
+		newSound.Parent = script
+
+		table.insert(preloadSounds, newSound)
+	end
+
+	local callback = function(assetId: string, assetFetchStatus: Enum.AssetFetchStatus)
+		if assetFetchStatus == Enum.AssetFetchStatus.Success then
+			return
+		end
+
+		warn(`Failed to preload sound with assetId {assetId}, status: {assetFetchStatus}`)
+	end
+
+	task.spawn(function()
+		ContentProvider:PreloadAsync(preloadSounds, callback)
+		if not complete then
+			return
+		end
+
+		complete:Fire()
+	end)
+
+	task.delay(realTimeout, function()
+		if not complete then
+			return
+		end
+
+		warn("Preloading sounds timed out! Continuing With compile process!")
+
+		complete:Fire()
+	end)
+
+	complete.Event:Wait()
+	complete:Destroy()
+
+	--we only needed the instances to preload.
+	for _, sound in ipairs(preloadSounds) do
+		sound:Destroy()
+	end
+end
+
 ------------------------------------------------------------------------------------------------------------------------
 
 --[[
@@ -49,13 +113,17 @@ local ClientData = {}
     Initializes the client sound system.
 
 	@yields
+
+	@param timeout number? -- Optional timeout for preloading sounds, default is 5 seconds.
 ]]
-function ClientData._initClient()
+function ClientData._initClient(timeout: number?)
 	if RunService:IsServer() then
 		error("Cannot initialize client on server!")
 	end
 
 	soundSchema = getDataForClient()
+
+	setPreloadSounds(timeout)
 end
 
 --[[
