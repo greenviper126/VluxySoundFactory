@@ -185,6 +185,22 @@ function SoundEntity.Sleep(self: SoundEntity, time: number): SoundEntity
 end
 
 --[=[
+	@method Attach
+	@within SoundEntity
+
+	@yields
+
+	@param func function(self: SoundEntity) -- The custom function to run.
+
+	Runs a custom function of your choice if code needs to run in a certain sequence.
+]=]
+function SoundEntity.Attach(self: SoundEntity, func: (self: SoundEntity) -> ()): SoundEntity
+	func(self)
+
+	return self
+end
+
+--[=[
 	@method Await
 	@within SoundEntity
 
@@ -219,15 +235,26 @@ function SoundEntity.Await(self: SoundEntity, timeout: number?)
 end
 
 --[=[
-	@method Reset
+	@method PlayWhenLoaded
 	@within SoundEntity
+
+	@yields
 
 	@return SoundEntity
 
-	Stops and Replays the sound from the beginning. This is useful for quickly restarting a sound without having to create a new SoundEntity instance.
+	Plays the sound when it is fully loaded.
 ]=]
-function SoundEntity.Reset(self: SoundEntity): SoundEntity
-	self:Stop():Play()
+function SoundEntity.PlayWhenLoaded(self: SoundEntity): SoundEntity
+	if self._sound.IsLoaded then
+		self:Play()
+		return self
+	end
+
+	self._cleaner:Add(function()
+		self._sound.Loaded:Wait()
+
+		self:Play()
+	end)
 
 	return self
 end
@@ -247,24 +274,15 @@ function SoundEntity.PlayOnce(self: SoundEntity)
 end
 
 --[=[
-	@method PlayWhenLoaded
+	@method Reset
 	@within SoundEntity
 
 	@return SoundEntity
 
-	Plays the sound when it is fully loaded.
+	Stops and Replays the sound from the beginning. This is useful for quickly restarting a sound without having to create a new SoundEntity instance.
 ]=]
-function SoundEntity.PlayWhenLoaded(self: SoundEntity): SoundEntity
-	if self._sound.IsLoaded then
-		self:Play()
-		return self
-	end
-
-	self._cleaner:Add(function()
-		self._sound.Loaded:Wait()
-
-		self:Play()
-	end)
+function SoundEntity.Reset(self: SoundEntity): SoundEntity
+	self:Stop():Play()
 
 	return self
 end
@@ -307,6 +325,16 @@ end
 ]=]
 function SoundEntity.Cleanup(self: SoundEntity)
 	self._sound:Destroy() --trove is attached
+end
+
+--[=[
+	@method Destroy
+	@within SoundEntity
+
+	Alias for Cleanup. Cleans up the Instance.
+]=]
+function SoundEntity.Destroy(self: SoundEntity)
+	self:Cleanup()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
