@@ -78,6 +78,7 @@ export type SoundGroups = Types.SoundGroups
 	.SoundGroupContainer Configuration -- A folder for storing sound groups.
 	.SoundGroups SoundGroups -- A dictionary of sound group instances, organized by name.
 	.SoundDefinitions SoundDefinitions -- A dictionary of sound definitions, organized by sound name.
+	.PreloadIds { string } -- A list of sound asset IDs to preload.
 
 	Defines the overall schema for the sound system, containing all necessary data for sound creation and management.
 ]=]
@@ -324,7 +325,7 @@ end
 	@param min number? -- Minimum multiplier for variance (default: 0.95)
 	@param max number? -- Maximum multiplier for variance (default: 1.05)
 
-	@return number -- variance result
+	@return () -> number -- variance result
 
 	Calculates a random variance value within the specified range.
 ]=]

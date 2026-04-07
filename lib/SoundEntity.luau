@@ -170,6 +170,8 @@ end
 	@method FadeTo
 	@within SoundEntity
 
+	@tag VolumeFade
+
 	@param volume number -- The target volume to fade to.
 	@param tweenInfo TweenInfo -- The TweenInfo object defining the duration and easing style of the fade.
 
@@ -209,6 +211,8 @@ end
 	@method FadeTo
 	@within SoundEntity
 
+	@tag VolumeFade
+
 	@param volume number -- The target volume to fade to.
 	@param time number? -- The duration of the fade in seconds. Defaults to 1 second if not provided.
 	@param style Enum.EasingStyle? -- Optional easing style for the fade. Defaults to Sine if not provided.
@@ -235,6 +239,8 @@ end
 	@method FadeIn
 	@within SoundEntity
 
+	@tag VolumeFade
+
 	@param time number -- The duration of the fade in seconds.
 	@param style Enum.EasingStyle? -- Optional easing style for the fade. Defaults to Sine.
 
@@ -256,6 +262,8 @@ end
 	@method FadeOut
 	@within SoundEntity
 
+	@tag VolumeFade
+
 	@param time number -- The duration of the fade out in seconds.
 	@param style Enum.EasingStyle? -- Optional easing style for the fade out. Defaults to Sine.
 
@@ -276,6 +284,8 @@ end
 --[=[
 	@method FadeStop
 	@within SoundEntity
+
+	@tag VolumeFade
 
 	@return SoundEntity -- The SoundEntity instance after stopping the fade.
 
@@ -487,6 +497,8 @@ end
 ]=]
 function SoundEntity.Listen(self: SoundEntity, type: "Ended" | ""): SoundEntity
 	--for all the events for sounds.
+
+	-- atm this does nothing!
 
 	return self
 end
