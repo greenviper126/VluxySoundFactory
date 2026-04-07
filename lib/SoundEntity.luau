@@ -342,7 +342,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 --[=[
-	@method FadeTo
+	@method FadeToRaw
 	@within SoundEntity
 
 	@tag VolumeFade
@@ -395,7 +395,7 @@ end
 
 	@return SoundEntity
 
-	Fades the sound's volume to the specified level over time using a tween with the given parameters. If a fade is already in progress, it will be cleaned up before starting the new fade.
+	Similar to FadeToRaw but does not need tweenInfo to be passed in.
 ]=]
 function SoundEntity.FadeTo(
 	self: SoundEntity,
