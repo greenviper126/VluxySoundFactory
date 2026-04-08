@@ -1,8 +1,10 @@
 --!strict
 
 local ContentProvider = game:GetService("ContentProvider")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
+local Properties = require(ReplicatedStorage.VluxySF.Utility.Properties)
 local Tables = require(script.Parent.Utility.Tables)
 local Trove = require(script.Parent.Utility.Trove)
 local Types = require(script.Parent.Types)
@@ -16,6 +18,39 @@ local SoundTools = require(script.Parent.SoundTools)
 	Callback function that PreLoadAsync uses.
 ]=]
 type PreloadCallback = (assetId: string, assetFetchStatus: Enum.AssetFetchStatus) -> ()
+
+--[=[
+	@within SoundEntity
+	@type EventCallback (v1: any, v2: any) -> ()
+
+	Generic callback function for events. The parameters passed to the callback will depend on the specific event being listened to.
+]=]
+type EventCallback = (v1: any, v2: any) -> ()
+
+--[=[
+	@within SoundEntity
+	@type InstanceEventTypes "Changed" | "AncestryChanged" | "AttributeChanged" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "StyledPropertiesChanged"
+
+	List of instance event types.
+]=]
+type InstanceEventTypes =
+	"Changed"
+	| "AncestryChanged"
+	| "AttributeChanged"
+	| "ChildAdded"
+	| "ChildRemoved"
+	| "DescendantAdded"
+	| "DescendantRemoving"
+	| "Destroying"
+	| "StyledPropertiesChanged"
+
+--[=[
+	@within SoundEntity
+	@type SoundEventTypes "DidLoop" | "Ended" | "Loaded" | "Paused" | "Played" | "Resumed" | "Stopped"
+
+	List of sound event types.
+]=]
+type SoundEventTypes = "DidLoop" | "Ended" | "Loaded" | "Paused" | "Played" | "Resumed" | "Stopped"
 
 --[=[
 	@class SoundEntity
@@ -111,10 +146,24 @@ end
 
 	@return SoundEntity
 
-	Resets the sound instance to match the original sound definition. This is useful if you want to discard any changes made to the sound's properties or effects and return it to its default state as defined in the sound schema.
+	Resets the sound instance to match the original sound definition.
 ]=]
 function SoundEntity.ResetToDefinition(self: SoundEntity): SoundEntity
-	--This should adjust the existing instances incase anything is attached. for now this does nothing!
+	for property, value in pairs(self._soundDefinition.Properties) do
+		Properties.ApplyPropertyValueToInstance(self._sound, property, value)
+	end
+
+	self._sound:ClearAllChildren()
+
+	for class, properties in pairs(self._soundDefinition.Effects) do
+		local newClass = Instance.new(class)
+
+		for property, value in pairs(properties) do --create new child class
+			Properties.ApplyPropertyValueToInstance(newClass, property, value)
+		end
+
+		newClass.Parent = self._sound
+	end
 
 	return self
 end
@@ -127,7 +176,7 @@ end
 
 	@return SoundEntity
 
-	Starts a new thread to run the provided function, allowing you to perform concurrent operations on the sound while it is playing. The thread will be automatically cleaned up when the sound is cleaned up.	
+	Starts a new thread to run the provided function, allowing you to perform concurrent operations on the sound while it is playing.	
 ]=]
 function SoundEntity.Fork(self: SoundEntity, thread: (self: SoundEntity) -> ()): SoundEntity
 	self._cleaner:Add(task.spawn(function()
@@ -352,7 +401,7 @@ end
 
 	@return SoundEntity
 
-	Fades the sound's volume to the specified level over time using a tween. If a fade is already in progress, it will be cleaned up before starting the new fade.
+	Fades the sound's volume to the specified level over time using a tween.
 ]=]
 function SoundEntity.FadeToRaw(self: SoundEntity, volume: number, tweenInfo: TweenInfo): SoundEntity
 	volume = math.clamp(volume, 0, 10)
@@ -421,7 +470,7 @@ end
 
 	@return SoundEntity
 
-	Fades the sound's volume up from 0 to its defined volume over the specified duration using a tween. If a fade is already in progress, it will be cleaned up before starting the new fade.
+	Fades the sound's volume up from 0 to its defined volume over the specified duration using a tween.
 ]=]
 function SoundEntity.FadeIn(self: SoundEntity, time: number, style: Enum.EasingStyle?): SoundEntity
 	local volume = self._soundDefinition.Properties.Volume --the real sound can have a different volume if it was already fading
@@ -444,7 +493,7 @@ end
 
 	@return SoundEntity
 
-	Fades the sound's volume down to 0 over the specified duration using a tween. If a fade is already in progress, it will be cleaned up before starting the new fade.
+	Fades the sound's volume down to 0 over the specified duration using a tween.
 ]=]
 function SoundEntity.FadeOut(self: SoundEntity, time: number, style: Enum.EasingStyle?): SoundEntity
 	local volume = self._sound.Volume --the real sound can have a different volume if it was already fading
@@ -464,7 +513,7 @@ end
 
 	@return SoundEntity
 
-	Stops any active volume tween and retains the current volume level. This allows you to interrupt a fade in progress without resetting the volume to its original level.
+	Stops any active volume tween and retains the current volume level.
 ]=]
 function SoundEntity.FadeStop(self: SoundEntity): SoundEntity
 	if self._fadeCleaner then
@@ -535,19 +584,28 @@ function SoundEntity.Stop(self: SoundEntity): SoundEntity
 	return self
 end
 
---[=[
-	@method Listen
+--[[
+	@method ListenToSound
 	@within SoundEntity
-	@tag SoundEvent
 
-	@param type "Ended" | "" -- The type of event to listen for. Currently supports "Ended" for when the sound finishes playing.
+	@param eventType SoundEventTypes -- The type of sound event to listen to.
+	@param func SoundEventCallback -- The callback function to execute when the event occurs.
 
-	Sets up an event listener for the specified event type on the sound. This allows you to trigger actions in response to sound events, such as when the sound ends.
-]=]
-function SoundEntity.Listen(self: SoundEntity, type: "Ended" | "")
-	--for all the events for sounds.
+	@return Trove
 
-	-- atm this does nothing!
+	Listens to a specific event on the Sound instance and executes the provided callback function when the event occurs.
+]]
+function SoundEntity.Listen(
+	self: SoundEntity,
+	eventType: SoundEventTypes | InstanceEventTypes,
+	func: EventCallback
+): Trove.Trove
+	local cleaner = self._cleaner:Extend()
+
+	local soundInstance = self._sound :: any --fix type error
+	cleaner:Connect(soundInstance[eventType], func)
+
+	return cleaner
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -563,7 +621,7 @@ end
 
 	@return SoundEntity
 
-	Sets the parent of the underlying Sound instance. This allows you to move the sound within the Roblox hierarchy, which can affect how it is heard based on its position relative to the listener and other factors.
+	Sets the parent property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetParent(self: SoundEntity, parent: Instance): SoundEntity
 	self._sound.Parent = parent
@@ -579,7 +637,7 @@ end
 
 	@return SoundEntity
 
-	Sets whether the sound should loop when it reaches the end. If `true`, the sound will automatically restart from the beginning when it finishes playing.
+	Sets the Looped property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetLooped(self: SoundEntity, looped: boolean): SoundEntity
 	self._sound.Looped = looped
@@ -595,7 +653,7 @@ end
 
 	@return SoundEntity
 
-	Sets whether the sound instance can be archived.
+	Sets the Archivable property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetArchivable(self: SoundEntity, archivable: boolean): SoundEntity
 	self._sound.Archivable = archivable
@@ -611,7 +669,7 @@ end
 
 	@return SoundEntity
 
-	Sets whether the sound will play when the Sound instance is removed (destroyed or parent set to nil).
+	Sets the PlayOnRemove property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetPlayOnRemove(self: SoundEntity, playOnRemove: boolean): SoundEntity
 	self._sound.PlayOnRemove = playOnRemove
@@ -627,7 +685,7 @@ end
 
 	@return SoundEntity
 
-	Sets the region of the sound that should loop when Looped is true. This property is only effective when PlaybackRegionsEnabled is true.
+	Sets the LoopRegion property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetLoopRegion(self: SoundEntity, loopRegion: NumberRange): SoundEntity
 	self._sound.LoopRegion = loopRegion
@@ -643,7 +701,7 @@ end
 
 	@return SoundEntity
 
-	Sets the region of the sound that is allowed to be played. This property is only effective when PlaybackRegionsEnabled is true.
+	Sets the PlaybackRegion property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetPlaybackRegion(self: SoundEntity, region: NumberRange): SoundEntity
 	self._sound.PlaybackRegion = region
@@ -659,7 +717,7 @@ end
 
 	@return SoundEntity
 
-	Enables or disables the use of PlaybackRegion and LoopRegion properties for more granular control over sound playback.
+	Sets the PlaybackRegionsEnabled property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetPlaybackRegionsEnabled(self: SoundEntity, enabled: boolean): SoundEntity
 	self._sound.PlaybackRegionsEnabled = enabled
@@ -675,7 +733,7 @@ end
 
 	@return SoundEntity
 
-	Sets the playback speed of the sound. Values higher than 1 play faster, lower values play slower.
+	Sets the PlaybackSpeed property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetPlaybackSpeed(self: SoundEntity, speed: number): SoundEntity
 	self._sound.PlaybackSpeed = speed
@@ -691,7 +749,7 @@ end
 
 	@return SoundEntity
 
-	Sets the maximum distance at which the sound can still be heard. Only applies to sounds parented to a BasePart or Attachment.
+	Sets the RollOffMaxDistance property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetRollOffMaxDistance(self: SoundEntity, maxDistance: number): SoundEntity
 	self._sound.RollOffMaxDistance = maxDistance
@@ -707,7 +765,7 @@ end
 
 	@return SoundEntity
 
-	Sets the minimum distance at which the sound begins to attenuate (decrease in volume). Only applies to sounds parented to a BasePart or Attachment.
+	Sets the RollOffMinDistance property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetRollOffMinDistance(self: SoundEntity, minDistance: number): SoundEntity
 	self._sound.RollOffMinDistance = minDistance
@@ -723,7 +781,7 @@ end
 
 	@return SoundEntity
 
-	Sets how the sound's volume attenuates based on distance from the listener. Only applies to sounds parented to a BasePart or Attachment.
+	Sets the RollOffMode property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetRollOffMode(self: SoundEntity, rollOffMode: Enum.RollOffMode): SoundEntity
 	self._sound.RollOffMode = rollOffMode
@@ -739,7 +797,7 @@ end
 
 	@return SoundEntity
 
-	Assigns the sound to a SoundGroup, which allows grouped volume control and effects management.
+	Sets the SoundGroup property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetSoundGroup(self: SoundEntity, soundGroup: SoundGroup): SoundEntity
 	self._sound.SoundGroup = soundGroup
@@ -755,7 +813,7 @@ end
 
 	@return SoundEntity
 
-	Sets the current playback position of the sound in seconds. Can be used to seek to a specific point in the audio.
+	Sets the TimePosition property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetTimePosition(self: SoundEntity, timePosition: number): SoundEntity
 	self._sound.TimePosition = timePosition
@@ -771,7 +829,7 @@ end
 
 	@return SoundEntity
 
-	Sets the volume of the sound. Values should be between 0 and 10, where 0 is silent and 10 is maximum volume.
+	Sets the Volume property of the underlying Sound instance.
 ]=]
 function SoundEntity.SetVolume(self: SoundEntity, volume: number): SoundEntity
 	self._sound.Volume = volume
