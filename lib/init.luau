@@ -158,9 +158,17 @@ end
 --[=[
 	@within VluxySF
 
-	@return boolean -- Whether the sound system has been initialized.
+	@return boolean -- Whether the sound schema has been initialized.
 
-	Checks if the sound system has been initialized.
+	Checks if the sound schema has been initialized.
+
+	```lua
+	if Sounds.IsInitialized() then
+		print("Sound schema is ready to use!")
+	else
+		print("Sound schema is not initialized yet. Please wait!")
+	end
+	```
 ]=]
 function Sounds.IsInitialized(): boolean
 	return isInitialized
@@ -174,6 +182,18 @@ end
 	@return boolean -- Whether the sound schema is ready for use.
 
 	Waits until the sound schema is initialized and ready for use.
+
+	If you know that your code will execute after the schema is loaded then this is not needed.
+
+	```lua
+	print("Waiting for sound system to initialize...")
+
+	Sounds.WaitForSchema()
+
+	print("Sound system is now initialized and ready to use!")
+
+	--now you can use functions and methods that require the schema!
+	```
 ]=]
 function Sounds.WaitForSchema()
 	repeat
@@ -191,6 +211,12 @@ end
 	@return SoundSchema -- The internal sound schema used by the system.
 
 	Provides access to the internal sound schema.
+
+	```lua
+	local schema = Sounds._getSchema()
+
+	print("Unattached sounds folder:", schema.UnattachedSounds)
+	```
 ]=]
 function Sounds._getSchema()
 	schemaFailCheck()
@@ -206,6 +232,16 @@ end
 	@return SoundDefinitions -- All converted sound data
 
 	Returns all serialized sound data.
+
+	```lua
+	local definitions = Sounds.GetSoundDefinitions()
+
+	for location, data in pairs(definitions) do
+		print("Sound location:", location)
+		print("Sound properties:", data.Properties)
+		print("Sound effects:", data.Effects)
+	end
+	```
 ]=]
 function Sounds.GetSoundDefinitions(): SoundDefinitions
 	schemaFailCheck()
@@ -220,6 +256,14 @@ end
 	@return { string } -- All registered sound locations
 
 	Returns all sound locations.
+
+	```lua
+	local locations = Sounds.GetSoundLocations()
+
+	for _, location in ipairs(locations) do
+		print("Sound location:", location)
+	end
+	```
 ]=]
 function Sounds.GetSoundLocations(): { string }
 	schemaFailCheck()
@@ -243,6 +287,17 @@ end
 	@return SoundGroup? -- Matching sound group, if found
 
 	Finds a sound group by name.
+
+	```lua
+	local groupName = "MY_SOUND_GROUP"
+	local soundGroup = Sounds.GetSoundGroup(groupName)
+
+	if soundGroup then
+		print("Found sound group:", groupName)
+	else
+		print("Sound group not found:", groupName)
+	end
+	```
 ]=]
 function Sounds.GetSoundGroup(name: string): SoundGroup?
 	schemaFailCheck()
@@ -258,6 +313,15 @@ end
 	@return SoundGroups -- All sound groups
 
 	Returns all sound groups.
+
+	```lua
+	local soundGroups = Sounds.GetSoundGroups()
+
+	for name, group in pairs(soundGroups) do
+		print("Sound group name:", name)
+		print("Sound group instance:", group)
+	end
+	```
 ]=]
 function Sounds.GetSoundGroups(): Types.SoundGroups
 	schemaFailCheck()
@@ -273,6 +337,12 @@ end
 	@return { string } -- All registered sound group names
 
 	Returns all sound group names.
+
+	```lua
+	local groupNames = Sounds.GetSoundGroupNames()
+
+	print("Registered sound groups:", table.concat(groupNames, ", "))
+	```
 ]=]
 function Sounds.GetSoundGroupNames(): { string }
 	schemaFailCheck()
@@ -297,6 +367,13 @@ end
 	@return SoundEntity -- Constructed class
 
 	A constructor for manipulating your sounds.
+
+	```lua
+	local soundLocation = "MY_SOUND/SoundFolder/mySound"
+	local soundEntity = Sounds.Create(soundLocation)
+
+	soundEntity:Play():Await(30):Reset():FadeIn(4)
+	```
 ]=]
 function Sounds.Create(sound: string | Types.SoundDefinition): SoundEntity.SoundEntity
 	schemaFailCheck()
@@ -316,6 +393,24 @@ end
 	@return Sound -- Constructed sound instance based on the provided definition.
 
 	Constructs a sound instance from a given sound definition, applying all specified properties and effects.
+
+	```lua
+	local soundDefinition: SoundDefinition = {
+		Properties = {
+			SoundId = "rbxassetid://123456789",
+			Volume = 0.3,
+		},
+		Effects = {
+			PitchShift = {
+				ClassName = "PitchShiftSoundEffect",
+				Octave = 0.8,
+			},
+		},
+	}
+
+	local soundInstance = Sounds.ConstructSoundFromDefinition(soundDefinition)
+	soundInstance:Play()
+	```
 ]=]
 function Sounds.ConstructSoundFromDefinition(soundDefinition: SoundDefinition): Sound
 	schemaFailCheck()
@@ -335,6 +430,14 @@ end
 	Creates a sound definition from a Roblox `Sound` instance by serializing its properties and valid child effects.
 
 	This does not get added to the definitions list.
+
+	```lua
+	local soundInstance: Sound = --[[ reference to an existing Sound instance ]]
+	local soundDefinition = Sounds.CreateSoundDefinitionFromSound(soundInstance)
+
+	print("Sound properties:", soundDefinition.Properties)
+	print("Sound effects:", soundDefinition.Effects)
+	```
 ]=]
 function Sounds.CreateSoundDefinitionFromSound(sound: Sound): SoundDefinition
 	schemaFailCheck()
@@ -354,6 +457,15 @@ end
 	@return Sound? -- Constructed sound instance if the definition is found, otherwise nil.
 
 	Constructs a sound instance from a sound definition identified by its name.
+
+	```lua
+	local soundName = "MY_SOUND/SoundFolder/mySound"
+	local soundInstance = Sounds.ConstructSoundFromName(soundName)
+
+	if soundInstance then
+		soundInstance:Play()
+	end
+	```
 ]=]
 function Sounds.ConstructSoundFromName(name: string): Sound?
 	schemaFailCheck()
@@ -383,6 +495,13 @@ end
 	@return number -- The estimated play length of the sound, including any variations in playback speed.
 
 	Calculates the estimated play length of a sound instance by considering its SoundId and any attached sound effects that may influence its duration.
+
+	```lua
+	local soundInstance: Sound = --[[ reference to an existing Sound instance ]]
+	local estimatedLength = Sounds.GetEstimatedPlayLength(soundInstance)
+
+	print("Estimated play length:", estimatedLength, "seconds")
+	```
 ]=]
 function Sounds.GetEstimatedPlayLength(sound: Sound): number
 	return SoundTools.GetEstimatedPlayLength(sound)
@@ -397,6 +516,16 @@ end
 	@return () -> number -- variance result
 
 	Calculates a random variance value within the specified range.
+
+	```lua
+	local varianceFunction = Sounds.Variance(0.9, 1.1)
+
+	local randomVariance1 = varianceFunction()
+	print("Random variance value:", randomVariance)
+
+	local  randomVariance2 = varianceFunction()
+	print("Another random variance value:", randomVariance2)
+	```
 ]=]
 function Sounds.Variance(min: number?, max: number?): () -> number
 	return function()

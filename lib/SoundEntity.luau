@@ -100,6 +100,23 @@ end
 	@return SoundEntity -- A new instance of SoundEntity initialized with the specified sound.
 
 	Constructor
+
+	```lua
+	--by name
+	local soundLocation = "SOUND_GROUP/FileLocation/soundInstance"
+	local soundEntity1 = SoundEntity.new(soundLocation)
+	
+	--by definition
+	local soundDefinition = {
+		Properties = {
+			Name = "MySound",
+			SoundId = "rbxassetid://123456789",
+			SoundGroup = "GAME"
+			Volume = 0.5,
+		},
+	}
+	local soundEntity2 = SoundEntity.new(soundDefinition)
+	```
 ]=]
 function SoundEntity.new(sound: string | Types.SoundDefinition): SoundEntity
 	local self = setmetatable({} :: self, SoundEntity)
@@ -133,12 +150,37 @@ function SoundEntity.new(sound: string | Types.SoundDefinition): SoundEntity
 end
 
 --[=[
+	@method GetCurrentPlayLength
+	@within SoundEntity
+
+	@return number -- The estimated play length of the sound in seconds.
+
+	Calculates the estimated play length of the sound based on its properties, including any active playback speed modifications. This can be useful for timing events or effects that should occur when the sound finishes playing.
+
+	```lua
+	soundEntity:Play():Sleep(4)
+
+	local playLength = soundEntity:GetCurrentPlayLength()--total length minus 4 sec
+	```
+]=]
+function SoundEntity.GetCurrentPlayLength(self: SoundEntity): number
+	return SoundTools.GetEstimatedPlayLength(self._sound)
+end
+
+--[=[
 	@method GetRawSound
 	@within SoundEntity
 
 	@return Sound -- The raw Sound instance created by this SoundEntity.
 
-	Provides access to the underlying Sound instance for advanced manipulation or retrieval of properties.]=]
+	Provides access to the underlying Sound instance for advanced manipulation or retrieval of properties.
+
+	```lua
+	local soundInstance = soundEntity:GetRawSound()
+	soundInstance.Volume = 0.5
+	soundInstance.Parent = workspace
+	```
+]=]
 function SoundEntity.GetRawSound(self: SoundEntity): Sound
 	return self._sound
 end
@@ -150,6 +192,10 @@ end
 	@return SoundEntity
 
 	Resets the sound instance to match the original sound definition.
+
+	```lua
+	soundEntity:ResetToDefinition()
+	```
 ]=]
 function SoundEntity.ResetToDefinition(self: SoundEntity): SoundEntity
 	for property, value in pairs(self._soundDefinition.Properties) do
@@ -179,7 +225,14 @@ end
 
 	@return SoundEntity
 
-	Starts a new thread to run the provided function, allowing you to perform concurrent operations on the sound while it is playing.	
+	Starts a new thread to run the provided function, allowing you to perform concurrent operations on the sound while it is playing.
+
+	```lua
+	soundEntity:Fork(function(self)
+		self:Sleep(5):Play()
+	end)
+	--no yield
+	```
 ]=]
 function SoundEntity.Fork(self: SoundEntity, func: (self: SoundEntity) -> ()): SoundEntity
 	self._forkCleaner:Add(task.spawn(function()
@@ -189,6 +242,18 @@ function SoundEntity.Fork(self: SoundEntity, func: (self: SoundEntity) -> ()): S
 	return self
 end
 
+--[=[
+	@method RemoveForks
+	@within SoundEntity
+
+	@return SoundEntity
+
+	Cleans up all active forks started with the Fork method, effectively stopping any concurrent operations that were running on the sound.
+
+	```lua
+	soundEntity:RemoveForks()
+	```
+]=]
 function SoundEntity.RemoveForks(self: SoundEntity): SoundEntity
 	self._forkCleaner:Clean()
 
@@ -208,6 +273,10 @@ end
 	Preloads the sound's audio asset to reduce latency when it is first played. This applies to all future sounds with the same assetId.
 
 	Doing this increases memory usage on the client and is not reversible. Only use if needed!
+
+	```lua
+	soundEntity:Preload()
+	```
 ]=]
 function SoundEntity.Preload(self: SoundEntity, callback: PreloadCallback?): SoundEntity
 	local realCallback = callback
@@ -235,9 +304,13 @@ end
 	@return SoundEntity
 
 	Waits for the specified amount of time before resuming. This can be used to create delays in sound sequences or effects.
+
+	```lua
+	soundEntity:Sleep(2):Stop() --waits 2 seconds before stopping
+	```
 ]=]
 function SoundEntity.Sleep(self: SoundEntity, time: number): SoundEntity
-	task.wait(time)
+	task.wait(math.max(0, time))
 
 	return self
 end
@@ -251,6 +324,14 @@ end
 	@param func function(self: SoundEntity) -- The custom function to run.
 
 	Runs a custom function of your choice if code needs to run in a certain sequence.
+
+	This is similar to `Fork` but does not run on a separate thread.
+
+	```lua
+	soundEntity:RunCustom(function(self)
+		--custom logic can go here
+	end):Play() --this will run after RunCustom
+	```
 ]=]
 function SoundEntity.RunCustom(self: SoundEntity, func: (self: SoundEntity) -> ()): SoundEntity
 	func(self)
@@ -267,6 +348,10 @@ end
 	@yields
 
 	Waits for the sound to finish playing or for the specified timeout to elapse before cleaning up the sound instance.
+
+	```lua
+	soundEntity:Play():Await(10) --waits for sound to finish or timeout
+	```
 ]=]
 function SoundEntity.Await(self: SoundEntity, timeout: number?)
 	if not self._sound.Playing then
@@ -277,7 +362,8 @@ function SoundEntity.Await(self: SoundEntity, timeout: number?)
 	local waitEvent = cleaner:Add(Instance.new("BindableEvent"))
 
 	--timeout
-	cleaner:Add(task.delay(timeout or math.huge, function()
+	local realTimeout = timeout and math.max(0, timeout) or math.huge
+	cleaner:Add(task.delay(realTimeout, function()
 		waitEvent:Fire()
 	end))
 
@@ -300,7 +386,11 @@ end
 
 	@return SoundEntity
 
-	Plays the sound when it is fully loaded.
+	Plays the sound when the sound on the instance is fully loaded.
+
+	```lua
+	soundEntity:PlayWhenLoaded()
+	```
 ]=]
 function SoundEntity.PlayWhenLoaded(self: SoundEntity): SoundEntity
 	if self._sound.IsLoaded then
@@ -322,6 +412,10 @@ end
 	@within SoundEntity
 
 	Plays the sound and automatically cleans it up after it finishes. This is useful for one-off sound effects that don't need to be reused.
+
+	```lua
+	soundEntity:PlayOnce()
+	```
 ]=]
 function SoundEntity.PlayOnce(self: SoundEntity)
 	task.spawn(function()
@@ -338,6 +432,10 @@ end
 	@return SoundEntity
 
 	Stops and Replays the sound from the beginning. This is useful for quickly restarting a sound without having to create a new SoundEntity instance.
+
+	```lua
+	soundEntity:Reset()
+	```
 ]=]
 function SoundEntity.Reset(self: SoundEntity): SoundEntity
 	self:Stop():Play()
@@ -352,6 +450,16 @@ end
 	@return SoundEntity -- A new SoundEntity instance with the same properties and effects as the original.
 
 	Creates a clone of the SoundEntity, allowing you to create multiple instances of the same sound definition without modifying the original.
+
+	```lua
+	local newSoundEntity1 = soundEntity:Clone()
+	local newSoundEntity2 = soundEntity:Clone()
+
+	soundEntity:Cleanup()
+
+	print(newSoundEntity1) --soundEntity
+	print(newSoundEntity2) --soundEntity
+	```
 ]=]
 function SoundEntity.Clone(self: SoundEntity): SoundEntity
 	return SoundEntity.new(self._soundDefinition)
@@ -364,6 +472,14 @@ end
 	@return SoundEntity -- A new SoundEntity instance with the same properties and effects as the original.
 
 	Makes a clone that is connected to the original SoundEntity. If the original is cleaned up so is this instance.
+
+	```lua
+	local extendedSoundEntity = soundEntity:Extend()
+
+	soundEntity:Cleanup()
+
+	print(extendedSoundEntity) --nil
+	```
 ]=]
 function SoundEntity.Extend(self: SoundEntity): SoundEntity
 	local clone = self:Clone()
@@ -380,6 +496,10 @@ end
 	@within SoundEntity
 
 	Cleans up the Instance.
+
+	```lua
+	soundEntity:Cleanup()
+	```
 ]=]
 function SoundEntity.Cleanup(self: SoundEntity)
 	self._sound:Destroy() --trove is attached
@@ -390,6 +510,10 @@ end
 	@within SoundEntity
 
 	Alias for Cleanup. Cleans up the Instance.
+
+	```lua
+	soundEntity:Destroy()
+	```
 ]=]
 function SoundEntity.Destroy(self: SoundEntity)
 	self:Cleanup()
@@ -411,6 +535,12 @@ end
 	@return SoundEntity
 
 	Fades the sound's volume to the specified level over time using a tween.
+
+	```lua
+	local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+	soundEntity:FadeToRaw(0.5, tweenInfo)
+	```
 ]=]
 function SoundEntity.FadeToRaw(self: SoundEntity, volume: number, tweenInfo: TweenInfo): SoundEntity
 	volume = math.clamp(volume, 0, 10)
@@ -452,6 +582,12 @@ end
 	@return SoundEntity
 
 	Similar to FadeToRaw but does not need tweenInfo to be passed in.
+
+	```lua
+	soundEntity:Play():Sleep(4)
+
+	soundEntity:FadeTo(0.5, 2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	```
 ]=]
 function SoundEntity.FadeTo(
 	self: SoundEntity,
@@ -478,6 +614,10 @@ end
 	@return SoundEntity
 
 	Fades the sound's volume up from 0 to its defined volume over the specified duration using a tween.
+
+	```lua
+	soundEntity:Play():FadeIn(2)
+	```
 ]=]
 function SoundEntity.FadeIn(self: SoundEntity, time: number, style: Enum.EasingStyle?): SoundEntity
 	local volume = self._soundDefinition.Properties.Volume --the real sound can have a different volume if it was already fading
@@ -501,6 +641,14 @@ end
 	@return SoundEntity
 
 	Fades the sound's volume down to 0 over the specified duration using a tween.
+
+	```lua
+	soundEntity:Play():RunCustom(function(self)
+		self:Sleep(self:GetCurrentPlayLength() - 2)
+
+		self:FadeOut(2)
+	end)
+	```
 ]=]
 function SoundEntity.FadeOut(self: SoundEntity, time: number, style: Enum.EasingStyle?): SoundEntity
 	local volume = self._sound.Volume --the real sound can have a different volume if it was already fading
@@ -521,6 +669,10 @@ end
 	@return SoundEntity
 
 	Stops any active volume tween and retains the current volume level.
+
+	```lua
+	soundEntity:FadeStop()
+	```
 ]=]
 function SoundEntity.FadeStop(self: SoundEntity): SoundEntity
 	self._fadeCleaner:Clean()
@@ -540,6 +692,10 @@ end
 	@return SoundEntity
 
 	Plays the sound.
+
+	```lua
+	soundEntity:Play()
+	```
 ]=]
 function SoundEntity.Play(self: SoundEntity): SoundEntity
 	self._sound:Play()
@@ -554,6 +710,10 @@ end
 	@return SoundEntity
 
 	Pauses the sound.
+
+	```lua
+	soundEntity:Play():Sleep(2):Pause()
+	```
 ]=]
 function SoundEntity.Pause(self: SoundEntity): SoundEntity
 	self._sound:Pause()
@@ -568,6 +728,10 @@ end
 	@return SoundEntity
 
 	Resumes the sound if it was paused.
+
+	```lua
+	soundEntity:Play():Sleep(2):Pause():Sleep(2):Resume()
+	```
 ]=]
 function SoundEntity.Resume(self: SoundEntity): SoundEntity
 	self._sound:Resume()
@@ -582,6 +746,10 @@ end
 	@return SoundEntity
 
 	Stops the sound.
+
+	```lua
+	soundEntity:Play():Sleep(2):Stop()
+	```
 ]=]
 function SoundEntity.Stop(self: SoundEntity): SoundEntity
 	self._sound:Stop()
@@ -602,6 +770,31 @@ end
 	@external Trove https://github.com/Sleitnick/RbxUtil/tree/main/modules/trove
 
 	Listens to a specific event on the Sound instance and executes the provided callback function when the event occurs.
+	
+	| EventType                 | Description                                                                                                                                     |
+	| ----                      | -------                                                                                                                                    |
+	| `DidLoop`                 | [`(soundId: string, numOfTimesLooped: number): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#DidLoop)    |
+	| `Ended`                   | [`(soundId: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#Ended)                                |
+	| `Loaded`                  | [`(soundId: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#Loaded)                               |
+	| `Paused`                  | [`(soundId: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#Paused)                               |
+	| `Played`                  | [`(soundId: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#Played)                               |
+	| `Resumed`                 | [`(soundId: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#Resumed)                              |
+	| `Stopped`                 | [`(soundId: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#Stopped)                              |
+	| `Changed`                 | [`(property: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Object#Changed)                            |
+	| `AncestryChanged`         | [`(child: Instance, parent: Instance): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#AncestryChanged) |
+	| `AttributeChanged`        | [`(attribute: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#AttributeChanged)                |
+	| `ChildAdded`              | [`(child: Instance): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#ChildAdded)                        |
+	| `ChildRemoved`            | [`(child: Instance): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#ChildRemoved)                      |
+	| `DescendantAdded`         | [`(descendant: Instance): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#DescendantAdded)              |
+	| `DescendantRemoving`      | [`(descendant: Instance): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#DescendantRemoving)           |
+	| `Destroying`              | [`(): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#Destroying)                                       |
+	| `StyledPropertiesChanged` | [`(): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#StyledPropertiesChanged)                          |
+
+	```lua
+	soundEntity:Listen("Ended", function()
+		print("The sound has finished playing!")
+	end)
+	```
 ]=]
 function SoundEntity.Listen(
 	self: SoundEntity,
@@ -630,6 +823,10 @@ end
 	@return SoundEntity
 
 	Sets the parent property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetParent(workspace)
+	```
 ]=]
 function SoundEntity.SetParent(self: SoundEntity, parent: Instance): SoundEntity
 	self._sound.Parent = parent
@@ -646,6 +843,10 @@ end
 	@return SoundEntity
 
 	Sets the Looped property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetLooped(true):Play() --plays forever
+	```
 ]=]
 function SoundEntity.SetLooped(self: SoundEntity, looped: boolean): SoundEntity
 	self._sound.Looped = looped
@@ -662,6 +863,10 @@ end
 	@return SoundEntity
 
 	Sets the Archivable property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetArchivable(true)
+	```
 ]=]
 function SoundEntity.SetArchivable(self: SoundEntity, archivable: boolean): SoundEntity
 	self._sound.Archivable = archivable
@@ -678,6 +883,10 @@ end
 	@return SoundEntity
 
 	Sets the PlayOnRemove property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetPlayOnRemove(true):Destroy() --plays in place
+	```
 ]=]
 function SoundEntity.SetPlayOnRemove(self: SoundEntity, playOnRemove: boolean): SoundEntity
 	self._sound.PlayOnRemove = playOnRemove
@@ -694,6 +903,10 @@ end
 	@return SoundEntity
 
 	Sets the LoopRegion property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetPlaybackRegionsEnabled(true):SetLoopRegion(NumberRange.new(1, 3)):SetLooped(true):Play() --loops between 1 and 3 seconds
+	```
 ]=]
 function SoundEntity.SetLoopRegion(self: SoundEntity, loopRegion: NumberRange): SoundEntity
 	self._sound.LoopRegion = loopRegion
@@ -710,6 +923,10 @@ end
 	@return SoundEntity
 
 	Sets the PlaybackRegion property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetPlaybackRegionsEnabled(true):SetPlaybackRegion(NumberRange.new(2, 5)):Play() --plays between 2 and 5 seconds
+	```
 ]=]
 function SoundEntity.SetPlaybackRegion(self: SoundEntity, region: NumberRange): SoundEntity
 	self._sound.PlaybackRegion = region
@@ -726,6 +943,10 @@ end
 	@return SoundEntity
 
 	Sets the PlaybackRegionsEnabled property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetPlaybackRegionsEnabled(true)
+	```
 ]=]
 function SoundEntity.SetPlaybackRegionsEnabled(self: SoundEntity, enabled: boolean): SoundEntity
 	self._sound.PlaybackRegionsEnabled = enabled
@@ -742,6 +963,10 @@ end
 	@return SoundEntity
 
 	Sets the PlaybackSpeed property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetPlaybackSpeed(1.5):Play() --plays 50% faster
+	```
 ]=]
 function SoundEntity.SetPlaybackSpeed(self: SoundEntity, speed: number): SoundEntity
 	self._sound.PlaybackSpeed = speed
@@ -758,6 +983,10 @@ end
 	@return SoundEntity
 
 	Sets the RollOffMaxDistance property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetRollOffMaxDistance(100)
+	```
 ]=]
 function SoundEntity.SetRollOffMaxDistance(self: SoundEntity, maxDistance: number): SoundEntity
 	self._sound.RollOffMaxDistance = maxDistance
@@ -774,6 +1003,10 @@ end
 	@return SoundEntity
 
 	Sets the RollOffMinDistance property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetRollOffMinDistance(10)
+	```
 ]=]
 function SoundEntity.SetRollOffMinDistance(self: SoundEntity, minDistance: number): SoundEntity
 	self._sound.RollOffMinDistance = minDistance
@@ -790,6 +1023,10 @@ end
 	@return SoundEntity
 
 	Sets the RollOffMode property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetRollOffMode(Enum.RollOffMode.Linear)
+	```
 ]=]
 function SoundEntity.SetRollOffMode(self: SoundEntity, rollOffMode: Enum.RollOffMode): SoundEntity
 	self._sound.RollOffMode = rollOffMode
@@ -806,6 +1043,10 @@ end
 	@return SoundEntity
 
 	Sets the SoundGroup property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetSoundGroup("MUSIC")
+	```
 ]=]
 function SoundEntity.SetSoundGroup(self: SoundEntity, soundGroup: SoundGroup): SoundEntity
 	self._sound.SoundGroup = soundGroup
@@ -822,6 +1063,10 @@ end
 	@return SoundEntity
 
 	Sets the TimePosition property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetTimePosition(10):Play() --plays from 10 seconds in
+	```
 ]=]
 function SoundEntity.SetTimePosition(self: SoundEntity, timePosition: number): SoundEntity
 	self._sound.TimePosition = timePosition
@@ -838,6 +1083,10 @@ end
 	@return SoundEntity
 
 	Sets the Volume property of the underlying Sound instance.
+
+	```lua
+	soundEntity:SetVolume(5)
+	```
 ]=]
 function SoundEntity.SetVolume(self: SoundEntity, volume: number): SoundEntity
 	self._sound.Volume = volume
