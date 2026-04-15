@@ -771,24 +771,24 @@ end
 
 	Listens to a specific event on the Sound instance and executes the provided callback function when the event occurs.
 	
-	| EventType                 | Description                                                                                                                                     |
-	| ----                      | -------                                                                                                                                    |
-	| `DidLoop`                 | [`(soundId: string, numOfTimesLooped: number): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#DidLoop)    |
-	| `Ended`                   | [`(soundId: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#Ended)                                |
-	| `Loaded`                  | [`(soundId: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#Loaded)                               |
-	| `Paused`                  | [`(soundId: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#Paused)                               |
-	| `Played`                  | [`(soundId: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#Played)                               |
-	| `Resumed`                 | [`(soundId: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#Resumed)                              |
-	| `Stopped`                 | [`(soundId: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Sound#Stopped)                              |
-	| `Changed`                 | [`(property: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Object#Changed)                            |
-	| `AncestryChanged`         | [`(child: Instance, parent: Instance): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#AncestryChanged) |
-	| `AttributeChanged`        | [`(attribute: string): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#AttributeChanged)                |
-	| `ChildAdded`              | [`(child: Instance): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#ChildAdded)                        |
-	| `ChildRemoved`            | [`(child: Instance): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#ChildRemoved)                      |
-	| `DescendantAdded`         | [`(descendant: Instance): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#DescendantAdded)              |
-	| `DescendantRemoving`      | [`(descendant: Instance): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#DescendantRemoving)           |
-	| `Destroying`              | [`(): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#Destroying)                                       |
-	| `StyledPropertiesChanged` | [`(): RBXScriptSignal`](https://create.roblox.com/docs/reference/engine/classes/Instance#StyledPropertiesChanged)                          |
+	| EventType                                                                                                             | Description                                                    |
+	| ----                                                                                                                  | -------                                                        |
+	| [`DidLoop`](https://create.roblox.com/docs/reference/engine/classes/Sound#DidLoop)                                    | `(soundId: string, numOfTimesLooped: number): RBXScriptSignal` |
+	| [`Ended`](https://create.roblox.com/docs/reference/engine/classes/Sound#Ended)                                        | `(soundId: string): RBXScriptSignal`                           |
+	| [`Loaded`](https://create.roblox.com/docs/reference/engine/classes/Sound#Loaded)                                      | `(soundId: string): RBXScriptSignal`                           |
+	| [`Paused`](https://create.roblox.com/docs/reference/engine/classes/Sound#Paused)                                      | `(soundId: string): RBXScriptSignal`                           |
+	| [`Played`](https://create.roblox.com/docs/reference/engine/classes/Sound#Played)                                      | `(soundId: string): RBXScriptSignal`                           |
+	| [`Resumed`](https://create.roblox.com/docs/reference/engine/classes/Sound#Resumed)                                    | `(soundId: string): RBXScriptSignal`                           |
+	| [`Stopped`](https://create.roblox.com/docs/reference/engine/classes/Sound#Stopped)                                    | `(soundId: string): RBXScriptSignal`                           |
+	| [`Changed`](https://create.roblox.com/docs/reference/engine/classes/Object#Changed)                                   | `(property: string): RBXScriptSignal`                          |
+	| [`AncestryChanged`](https://create.roblox.com/docs/reference/engine/classes/Instance#AncestryChanged)                 | `(child: Instance, parent: Instance): RBXScriptSignal`         |
+	| [`AttributeChanged`](https://create.roblox.com/docs/reference/engine/classes/Instance#AttributeChanged)               | `(attribute: string): RBXScriptSignal`                         |
+	| [`ChildAdded`](https://create.roblox.com/docs/reference/engine/classes/Instance#ChildAdded)                           | `(child: Instance): RBXScriptSignal`                           |
+	| [`ChildRemoved`](https://create.roblox.com/docs/reference/engine/classes/Instance#ChildRemoved)                       | `(child: Instance): RBXScriptSignal`                           |
+	| [`DescendantAdded`](https://create.roblox.com/docs/reference/engine/classes/Instance#DescendantAdded)                 | `(descendant: Instance): RBXScriptSignal`                      |
+	| [`DescendantRemoving`](https://create.roblox.com/docs/reference/engine/classes/Instance#DescendantRemoving)           | `(descendant: Instance): RBXScriptSignal`                      |
+	| [`Destroying`](https://create.roblox.com/docs/reference/engine/classes/Instance#Destroying)                           | `(): RBXScriptSignal`                                          |
+	| [`StyledPropertiesChanged`](https://create.roblox.com/docs/reference/engine/classes/Instance#StyledPropertiesChanged) | `(): RBXScriptSignal`                                          |
 
 	```lua
 	soundEntity:Listen("Ended", function()
