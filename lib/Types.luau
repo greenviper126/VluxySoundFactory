@@ -1,61 +1,98 @@
 --!strict
 
 ------------------------------------------------------------------------------------------------------------------------
-
-type Dictionary<T> = { [string]: T }
-
-------------------------------------------------------------------------------------------------------------------------
-
-export type SoundEffectDefinition = Dictionary<any>
-
-export type SoundEffectDefinitions = Dictionary<SoundEffectDefinition>
-
-export type SoundProperties = Sound
-
-export type SoundDefinition = {
-	Properties: SoundProperties,
-	Effects: SoundEffectDefinitions,
-}
-
-export type SoundDefinitions = Dictionary<SoundDefinition>
-
-export type SoundGroups = Dictionary<SoundGroup>
-
+--SCHEMA----------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
 export type SoundSchema = {
 	UnattachedSounds: Configuration,
 	SoundGroupContainer: Configuration,
 	SoundGroups: SoundGroups,
-	SoundDefinitions: SoundDefinitions,
 	PreloadIds: { string },
+
+	SoundDefinitions: SoundDefinitions,
+	DefinitionsGroupHash: Dictionary<Dictionary<string>>,
 }
 
 ------------------------------------------------------------------------------------------------------------------------
 
-type Sound = {
+export type SoundGroups = Dictionary<SoundGroup>
+
+------------------------------------------------------------------------------------------------------------------------
+
+export type SoundDefinitions = Dictionary<SoundDefinition>
+
+export type SoundDefinition = {
+	Properties: SoundSerialized,
+	Effects: SoundChildrenSerialized,
+}
+
+------------------------------------------------------------------------------------------------------------------------
+
+export type SoundChildrenSerialized = {
+	ChorusSoundEffect: ChorusSoundEffectSerialized?,
+	CompressorSoundEffect: CompressorSoundEffectSerialized?,
+	DistortionSoundEffect: DistortionSoundEffectSerialized?,
+	EchoSoundEffect: EchoSoundEffectSerialized?,
+	EqualizerSoundEffect: EqualizerSoundEffectSerialized?,
+	FlangeSoundEffect: FlangeSoundEffectSerialized?,
+	PitchShiftSoundEffect: PitchShiftSoundEffectSerialized?,
+	ReverbSoundEffect: ReverbSoundEffectSerialized?,
+	TremoloSoundEffect: TremoloSoundEffectSerialized?,
+}
+
+------------------------------------------------------------------------------------------------------------------------
+
+export type SoundSerialized = BaseInstance & SoundProperties
+
+export type ChorusSoundEffectSerialized = BaseEffect & ChorusSoundEffectProperties
+
+export type CompressorSoundEffectSerialized = BaseEffect & CompressorSoundEffectProperties
+
+export type DistortionSoundEffectSerialized = BaseEffect & DistortionSoundEffectProperties
+
+export type EchoSoundEffectSerialized = BaseEffect & EchoSoundEffectProperties
+
+export type EqualizerSoundEffectSerialized = BaseEffect & EqualizerSoundEffectProperties
+
+export type FlangeSoundEffectSerialized = BaseEffect & FlangeSoundEffectProperties
+
+export type PitchShiftSoundEffectSerialized = BaseEffect & PitchShiftSoundEffectProperties
+
+export type ReverbSoundEffectSerialized = BaseEffect & ReverbSoundEffectProperties
+
+export type TremoloSoundEffectSerialized = BaseEffect & TremoloSoundEffectProperties
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
+type Dictionary<T> = { [string]: T }
+
+type BaseInstance = ObjectProperties & InstanceProperties
+
+type BaseEffect = BaseInstance & SoundEffectProperties
+
+------------------------------------------------------------------------------------------------------------------------
+
+type SoundProperties = {
 	AcousticSimulationEnabled: boolean,
 	AudioContent: string,
-	ChannelCount: number,
 	EmitterSize: number,
 	IsLoaded: boolean,
-	IsMutedForCapture: boolean,
 	IsPaused: boolean,
 	IsPlaying: boolean,
-	IsSpatial: boolean,
-	LoopRegion: number,
+	isPlaying: boolean,
 	Looped: boolean,
+	LoopRegion: NumberRange,
 	MaxDistance: number,
 	MinDistance: number,
 	Pitch: number,
-	PlayOnRemove: boolean,
 	PlaybackLoudness: number,
-	PlaybackRegion: number,
+	PlaybackRegion: NumberRange,
 	PlaybackRegionsEnabled: boolean,
 	PlaybackSpeed: number,
 	Playing: boolean,
-	PlayingReplicator: any,
-	RollOffGain: number,
+	PlayOnRemove: boolean,
 	RollOffMaxDistance: number,
 	RollOffMinDistance: number,
 	RollOffMode: Enum.RollOffMode,
@@ -63,33 +100,97 @@ type Sound = {
 	SoundId: string,
 	TimeLength: number,
 	TimePosition: number,
-	TimePositionReplicator: any,
-	UsageContextPermission: any,
 	Volume: number,
-	isPlaying: boolean,
-	xmlRead_MaxDistance_3: number,
-	xmlRead_MinDistance_3: number,
+}
+
+------------------------------------------------------------------------------------------------------------------------
+
+type ChorusSoundEffectProperties = {
+	Depth: number,
+	Mix: number,
+	Rate: number,
+	Priority: number,
+}
+
+type CompressorSoundEffectProperties = {
+	Attack: number,
+	GainMakeup: number,
+	Ratio: number,
+	Release: number,
+	Threshold: number,
+	Priority: number,
+}
+
+type DistortionSoundEffectProperties = {
+	Level: number,
+	Priority: number,
+}
+
+type EchoSoundEffectProperties = {
+	Delay: number,
+	Feedback: number,
+	WetLevel: number,
+	DryLevel: number,
+	Priority: number,
+}
+
+type EqualizerSoundEffectProperties = {
+	HighGain: number,
+	LowGain: number,
+	MidGain: number,
+	Priority: number,
+}
+
+type FlangeSoundEffectProperties = {
+	Depth: number,
+	Mix: number,
+	Rate: number,
+	Priority: number,
+}
+
+type PitchShiftSoundEffectProperties = {
+	Octave: number,
+	Priority: number,
+}
+
+type ReverbSoundEffectProperties = {
+	DecayTime: number,
+	Density: number,
+	Diffusion: number,
+	DryLevel: number,
+	WetLevel: number,
+	Priority: number,
+}
+
+type TremoloSoundEffectProperties = {
+	Depth: number,
+	Duty: number,
+	Frequency: number,
+	Priority: number,
+}
+
+------------------------------------------------------------------------------------------------------------------------
+
+type SoundEffectProperties = {
+	Enabled: boolean,
+	Priority: number,
+}
+
+type InstanceProperties = {
 	Archivable: boolean,
-	Attributes: Dictionary<any>,
-	AttributesReplicate: Dictionary<any>,
-	AttributesSerialize: Dictionary<any>,
-	Capabilities: Dictionary<any>,
-	DataCost: number,
-	DefinesCapabilities: Dictionary<any>,
-	HistoryId: string,
+	archivable: boolean,
+	Capabilities: SecurityCapabilities,
 	Name: string,
 	Parent: Instance,
 	PredictionMode: Enum.PredictionMode,
-	PropertyStatusStudio: any,
 	RobloxLocked: boolean,
 	Sandboxed: boolean,
-	SourceAssetId: string,
-	Tags: { [string]: any },
-	UniqueId: string,
-	archivable: boolean,
-	numExpectedDirectChildren: number,
-	ClassName: string,
-	className: string,
 }
+
+type ObjectProperties = {
+	ClassName: string,
+}
+
+------------------------------------------------------------------------------------------------------------------------
 
 return nil

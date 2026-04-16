@@ -3,31 +3,21 @@
 
 ------------------------------------------------------------------------------------------------------------------------
 
---excepts class names only
-local ALLOWED_SOUND_CHILDREN = {
-	"ChorusSoundEffect",
-	"CompressorSoundEffect",
-	"DistortionSoundEffect",
-	"EchoSoundEffect",
-	"EqualizerSoundEffect",
-	"FlangeSoundEffect",
-	"PitchShiftSoundEffect",
-	"ReverbSoundEffect",
-	"TremoloSoundEffect",
-}
-
-------------------------------------------------------------------------------------------------------------------------
-
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local SoundService = game:GetService("SoundService")
 
+local library = script.Parent.Parent
 local utility = script.Parent.Parent.Utility
 
-local Properties = require(utility.Properties)
 local Ratelimit = require(utility.RateLimit)
 local RemoteFunction = require(utility.RemoteFunction)
 
-local Types = require(script.Parent.Parent.Types)
+local Conversions = require(library.Tools.Conversions)
+local Fetching = require(ReplicatedStorage.VluxySF.Tools.Fetching)
+local Hasher = require(library.Tools.Hasher)
+
+local Types = require(library.Types)
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -42,93 +32,17 @@ soundGroupContainerFolder.Parent = SoundService
 local soundSchema: Types.SoundSchema = {
 	UnattachedSounds = unattachedSoundsFolder,
 	SoundGroupContainer = soundGroupContainerFolder,
+
 	SoundGroups = {},
 	SoundDefinitions = {},
+
 	PreloadIds = {},
+	DefinitionsGroupHash = {},
 }
 
-------------------------------------------------------------------------------------------------------------------------
-
---[[
-    Retrieves the sound effects of a sound instance that are valid sound effects and converts them into tables.
-
-    @param sound Sound - The sound instance to retrieve children from.
-
-    @return Types.SoundEffectDefinitions - A dictionary of the sound's valid children converted into tables, organized by class name.
-]]
-local function getSoundEffectDefinitions(sound: Sound): Types.SoundEffectDefinitions
-	local children = {}
-
-	for _, child in pairs(sound:GetChildren()) do
-		if not table.find(ALLOWED_SOUND_CHILDREN, child.ClassName) then
-			continue
-		end
-
-		children[child.ClassName] = Properties.InstanceToProperties(child)
-	end
-
-	return children
-end
+local usesStrictNaming = true
 
 ------------------------------------------------------------------------------------------------------------------------
-
---[[
-	Registers a sound instance by converting it into a sound definition and associating it with a sound group.
-
-	@param sound Sound - The sound instance to register.
-	@param soundGroup string - The name of the sound group to associate the sound with.
-
-	@return boolean, Types.SoundDefinition? - A boolean indicating success, and the resulting sound definition if successful.
-]]
-local function registerSound(sound: Sound, soundGroup: string)
-	return pcall(function()
-		local soundDefinition: Types.SoundDefinition = {
-			Properties = Properties.InstanceToProperties(sound),
-			Effects = getSoundEffectDefinitions(sound),
-		}
-
-		soundDefinition.Properties.Name = sound.Name --sugar
-		soundDefinition.Properties.SoundGroup = soundGroup --add to sound group
-
-		return soundDefinition
-	end)
-end
-
---[[
-	Retrieves the location of a sound instance within the sound folder hierarchy as a string.
-
-	@param sound Sound - The sound instance to retrieve the location of.
-	@param baseFolder Instance - The base folder to stop backtracking at (e.g., the unattached sounds folder or a sound group folder).
-
-	@return string - The location of the sound instance within the sound folder hierarchy, formatted as "Folder/Subfolder/SoundName".
-]]
-local function getSoundLocation(sound: Sound, baseFolder: Instance): string
-	local location = ""
-	local parents = {}
-
-	--get parents
-	local function backtrack(folder: Instance)
-		table.insert(parents, folder.Name)
-
-		if folder ~= baseFolder and folder.Parent then
-			backtrack(folder.Parent)
-		end
-	end
-	backtrack(sound)
-
-	--convert to string
-	for i = #parents, 1, -1 do
-		location ..= parents[i]
-
-		if i == 1 then
-			break
-		end
-
-		location ..= "/"
-	end
-
-	return location
-end
 
 --[[
     Sets grouped sounds from a folder into the sound definitions.
@@ -137,35 +51,33 @@ end
     @param childFolder Instance - The folder containing the sounds to add.
 ]]
 local function setGroupedSounds(soundDefinitions: Types.SoundDefinitions, childFolder: Instance)
+	local names = {}
+
 	for _, sound in pairs(childFolder:GetDescendants()) do
 		if not sound:IsA("Sound") then
 			continue
 		end
 
+		--to enforce more traditional naming style of sounds
+		if names[sound.Name] and usesStrictNaming then
+			warn(`Duplicate sound name of {sound.Name} was found in {childFolder.Name} group!, {sound:GetFullName()}`)
+		end
+		names[sound.Name] = true
+
 		--creates a sound definition
-		local success, result = registerSound(sound, childFolder.Name)
+		local success, result = pcall(function()
+			local newDefinition = Conversions.SoundToDefinition(sound)
+			newDefinition.Properties.SoundGroup = childFolder.Name --add to sound group
+
+			return newDefinition
+		end)
 
 		if success then
-			local soundLocation = getSoundLocation(sound, childFolder)
+			local soundLocation = Fetching.CreateLocation(sound, childFolder)
 			soundDefinitions[soundLocation] = result
 		else
 			warn(result)
 		end
-	end
-end
-
---[[
-	Sets preload sound ids from a folder into the sound definitions.
-
-	@param childFolder Instance - The folder containing the sounds to add.
-]]
-local function setPreloadIds(childFolder: Instance)
-	for _, instance in pairs(childFolder:GetDescendants()) do
-		if not instance:IsA("Sound") then
-			continue
-		end
-
-		table.insert(soundSchema.PreloadIds, instance.SoundId)
 	end
 end
 
@@ -176,29 +88,14 @@ end
 
     @return Types.SoundDefinitions - The created sound definitions dictionary.
 ]]
-local function createSoundDefinitions(soundFolder: Configuration)
+local function createSoundDefinitions(soundFolder: Configuration): Types.SoundDefinitions
 	local soundDefinitions: Types.SoundDefinitions = {}
 
-	--first set of children defines sound groups
 	for _, childFolder in pairs(soundFolder:GetChildren()) do
-		local soundGroup = Instance.new("SoundGroup")
-		soundGroup.Name = childFolder.Name
-		soundGroup.Parent = soundSchema.SoundGroupContainer
-
-		soundSchema.SoundGroups[childFolder.Name] = soundGroup
-
 		setGroupedSounds(soundDefinitions, childFolder)
 	end
 
-	--set preload
-	local preloadFolders = soundFolder:QueryDescendants("#_Preload")
-	for _, preloadFolder in ipairs(preloadFolders) do
-		setPreloadIds(preloadFolder)
-	end
-
-	soundSchema.SoundDefinitions = soundDefinitions
-
-	soundFolder:Destroy() --destroy folder after converting sounds to definitions to save memory
+	return soundDefinitions
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -211,8 +108,19 @@ end
 	@param soundFolder Configuration - The folder containing sound group folders and unattached sounds.
 ]]
 local function initializeServerSoundSystem(soundFolder: Configuration)
+	--set groups
+	soundSchema.SoundGroups = Conversions.SoundConfigToSoundGroups(soundFolder, soundSchema.SoundGroupContainer)
+
 	--convert Sounds
-	createSoundDefinitions(soundFolder)
+	soundSchema.SoundDefinitions = createSoundDefinitions(soundFolder)
+
+	--set group hash
+	soundSchema.DefinitionsGroupHash = Hasher.HashGroups(soundSchema)
+
+	--set preload
+	soundSchema.PreloadIds = Conversions.SoundConfigToPreloadIds(soundFolder)
+
+	soundFolder:Destroy() --destroy folder after converting sounds to definitions to save memory
 
 	--send conversion to client
 	local soundRequestLimit = Ratelimit(5, 5)
@@ -237,15 +145,20 @@ local ServerData = {}
     Initializes the server sound system.
 
 	soundFolder should be on the server side.
-
-    @param folder Configuration | Folder -- The folder containing sound group folders and unattached sounds.
+	
+	@param soundFolder -- The folder containing sound group folders and unattached sounds.
+	@param strictNaming -- Optional parameter to enforce strict naming of sounds within groups, default is true. If true, duplicate sound names within the same group will trigger a warning.
 ]]
-function ServerData._initServer(soundFolder: Configuration | Folder)
+function ServerData._initServer(soundFolder: Configuration | Folder, strictNaming: boolean?)
 	if RunService:IsClient() then
 		error(`Cannot initialize server on client! {soundFolder:GetFullName()}`)
 	end
 	if typeof(soundFolder) ~= "Instance" then
 		error(`Invalid sound folder injected! {soundFolder:GetFullName()}`)
+	end
+
+	if strictNaming ~= nil then
+		usesStrictNaming = strictNaming
 	end
 
 	initializeServerSoundSystem(soundFolder :: Configuration)
