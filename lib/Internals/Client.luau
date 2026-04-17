@@ -22,7 +22,7 @@ local soundSchema: Types.SoundSchema
 
 	@yields
 
-	@return Types.SoundSchema - The sound schema containing unattached sounds, sound groups, and sound definitions.
+	@return Types.SoundSchema -- The sound schema containing unattached sounds, sound groups, and sound definitions.
 ]]
 local function getDataForClient(): Types.SoundSchema
 	local remoteFunction = RemoteFunction.new("SoundRequest")
@@ -129,7 +129,7 @@ end
 --[[
 	Retrieves the SoundSchema.
 
-	@return Types.SoundSchema - The sound schema containing unattached sounds, sound groups, and sound definitions.
+	@return Types.SoundSchema -- The sound schema containing unattached sounds, sound groups, and sound definitions.
 ]]
 function ClientData.GetSoundSchema(): Types.SoundSchema
 	return soundSchema

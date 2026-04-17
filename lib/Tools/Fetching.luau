@@ -10,8 +10,8 @@ local Fetching = {}
 --[[
 	Creates a sound definition location string based on the sound's position within the folder hierarchy.
 
-	@param sound The Sound instance to create a location for.
-	@param baseFolder The base folder that serves as the root for the location string.
+	@param sound Sound -- The Sound instance to create a location for.
+	@param baseFolder Instance -- The base folder that serves as the root for the location string.
 
 	@return string -- The created location string.
 ]]
@@ -46,8 +46,8 @@ end
 --[[
     Fetches a `SoundDefinition` directly by its location in the schema.
 
-    @param schema The `SoundSchema` to search within.
-    @param location The location of the sound definition to fetch.
+    @param schema SoundSchema -- The `SoundSchema` to search within.
+    @param location string -- The location of the sound definition to fetch.
 
     @return string? -- The sound location.
 ]]
@@ -58,8 +58,8 @@ end
 --[[
     Fetches a `SoundDefinition` by its name across all sound groups in the schema. first wins!
 
-    @param schema The `SoundSchema` to search within.
-    @param name The name of the sound definition to fetch.
+    @param schema SoundSchema -- The `SoundSchema` to search within.
+    @param name string -- The name of the sound definition to fetch.
 
     @return string? -- The location.
 ]]
@@ -79,9 +79,9 @@ end
 --[[
     Fetches a `SoundDefinition` by its name within a specific sound group in the schema.
 
-    @param schema The `SoundSchema` to search within.
-    @param soundGroup The `SoundGroup` to look within.
-    @param name The name of the sound definition to fetch.
+    @param schema SoundSchema -- The `SoundSchema` to search within.
+    @param soundGroup string -- The `SoundGroup` to look within.
+    @param name string -- The name of the sound definition to fetch.
 
     @return string? -- The location.
 ]]

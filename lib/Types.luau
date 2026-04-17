@@ -16,6 +16,22 @@ export type SoundSchema = {
 
 ------------------------------------------------------------------------------------------------------------------------
 
+export type SoundDefinitionInstanced = Sound & SoundChildrenInstanced
+
+export type SoundChildrenInstanced = {
+	ChorusSoundEffect: ChorusSoundEffect?,
+	CompressorSoundEffect: CompressorSoundEffect?,
+	DistortionSoundEffect: DistortionSoundEffect?,
+	EchoSoundEffect: EchoSoundEffect?,
+	EqualizerSoundEffect: EqualizerSoundEffect?,
+	FlangeSoundEffect: FlangeSoundEffect?,
+	PitchShiftSoundEffect: PitchShiftSoundEffect?,
+	ReverbSoundEffect: ReverbSoundEffect?,
+	TremoloSoundEffect: TremoloSoundEffect?,
+}
+
+------------------------------------------------------------------------------------------------------------------------
+
 export type SoundGroups = Dictionary<SoundGroup>
 
 ------------------------------------------------------------------------------------------------------------------------

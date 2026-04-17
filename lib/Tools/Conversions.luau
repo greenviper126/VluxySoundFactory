@@ -20,6 +20,14 @@ local ALLOWED_SOUND_CHILDREN = {
 ]]
 local Conversions = {}
 
+--[[
+	Converts a SoundConfig to a list of SoundGroups.
+
+	@param soundConfig Configuration -- The SoundConfig to convert.
+	@param parent Instance -- The parent instance to create the SoundGroups under.
+
+	@return SoundGroups -- A table of SoundGroups created from the SoundConfig.
+]]
 function Conversions.SoundConfigToSoundGroups(soundConfig: Configuration, parent: Instance): Types.SoundGroups
 	local soundGroups: Types.SoundGroups = {}
 
@@ -35,6 +43,13 @@ function Conversions.SoundConfigToSoundGroups(soundConfig: Configuration, parent
 	return soundGroups
 end
 
+--[[
+	Converts a SoundConfig to a list of SoundIds that should be preloaded.
+
+	@param soundConfig Configuration -- The SoundConfig to convert.
+
+	@return { string } -- A list of SoundIds to preload.
+]]
 function Conversions.SoundConfigToPreloadIds(soundConfig: Configuration): { string }
 	local preloadIds = {}
 
@@ -60,7 +75,7 @@ end
 --[[
     Converts a Sound instance to a SoundDefinition.
 
-    @param sound -- The Sound instance to convert.
+    @param sound Sound -- The Sound instance to convert.
 
     @return SoundDefinition -- The created Definition
 ]]
@@ -121,7 +136,7 @@ end
 
     @return Sound -- The created Sound
 ]]
-function Conversions.DefinitionToSound(definition: Types.SoundDefinition): Sound
+function Conversions.DefinitionToSound(definition: Types.SoundDefinition): Types.SoundDefinitionInstanced
 	local sound = Instance.new("Sound")
 	sound:AddTag("VLUXY_SOUND_FACTORY_INSTANCE") --lets the system know what sound was created by VluxySF
 
@@ -149,7 +164,7 @@ function Conversions.DefinitionToSound(definition: Types.SoundDefinition): Sound
 		addEffect(effectName, effectProperties)
 	end
 
-	return sound
+	return sound :: Types.SoundDefinitionInstanced
 end
 
 return Conversions

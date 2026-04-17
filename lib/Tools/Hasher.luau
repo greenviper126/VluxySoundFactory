@@ -7,7 +7,7 @@ local Hasher = {}
 --[[
     Hashes `SoundDefinitions` into a nested dictionary for efficient lookup by sound group and name.
 
-    @param schema -- The `SoundSchema`.
+    @param schema SoundSchema -- The `SoundSchema`.
 
     @return { [string]: { [string]: string } } -- A nested dictionary where the first key is the sound group name, the second key is the sound name, and the value is the sound definition location.
 ]]

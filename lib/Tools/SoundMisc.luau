@@ -10,7 +10,7 @@ local SoundMisc = {}
 --[[
     Estimates the remaining play length of a sound, accounting for playback speed and current time position. Adds a small padding to ensure the sound has finished playing.
 
-    @param sound The Sound instance or SoundDefinition to estimate play length for.
+    @param sound Sound | SoundDefinition -- The Sound instance or SoundDefinition to estimate play length for.
 
     @return number -- The estimated remaining play length in seconds.
 ]]

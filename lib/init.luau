@@ -16,53 +16,13 @@ local SoundMisc = require(tools.SoundMisc)
 local Types = require(script.Types)
 
 ----------------------------------------------------------------------------------------------------------------
-
---[=[
-	@type SoundEffectDefinitions Dictionary<SoundEffectDefinition>
-	@within VluxySF
-
-	Defines the sound effects of a sound as a dictionary of class names to their corresponding properties.
-]=]
-export type SoundEffectDefinitions = Types.SoundChildrenSerialized
-
---[=[
-	@type SoundProperties Dictionary<any>
-	@within VluxySF
-
-	Defines the properties of a sound as a dictionary of property names and values.
-]=]
-export type SoundProperties = Types.SoundSerialized
-
---[=[
-	@interface SoundDefinition
-	@within VluxySF
-
-	.Properties SoundProperties -- The properties of the sound itself, such as SoundId, Volume, etc.
-	.Effects SoundEffectDefinitions -- The sound effects of the sound, organized by class name.
-
-	Defines the properties and sound effects of a sound.
-]=]
-export type SoundDefinition = Types.SoundDefinition
-
---[=[
-	@type SoundDefinitions Dictionary<SoundDefinition>
-	@within VluxySF
-
-	Defines the sound definitions of the system as a dictionary of sound names to their corresponding sound data.
-]=]
-export type SoundDefinitions = Types.SoundDefinitions
-
---[=[
-	@type SoundGroups Dictionary<SoundGroup>
-	@within VluxySF
-
-	Defines the type of a sound group instance.
-]=]
-export type SoundGroups = Types.SoundGroups
+----------------------------------------------------------------------------------------------------------------
 
 --[=[
 	@interface SoundSchema
 	@within VluxySF
+
+	@tag Schema
 
 	.UnattachedSounds Configuration -- A folder for storing unattached sounds.
 	.SoundGroupContainer Configuration -- A folder for storing sound groups.
@@ -74,6 +34,199 @@ export type SoundGroups = Types.SoundGroups
 	Defines the overall schema for the sound system, containing all necessary data for sound creation and management.
 ]=]
 export type SoundSchema = Types.SoundSchema
+
+----------------------------------------------------------------------------------------------------------------
+
+--[=[
+	@type SoundDefinitionInstanced Sound & SoundChildrenInstanced
+	@within VluxySF
+
+	@tag Instanced
+
+	Defines a sound group, which is a collection of sounds that can be managed together, allowing for collective volume control and organization.
+]=]
+export type SoundDefinitionInstanced = Types.SoundDefinitionInstanced
+
+--[=[
+	@interface SoundChildrenInstanced
+	@within VluxySF
+
+	@tag Instanced
+	
+	.TremoloSoundEffect TremoloSoundEffect?
+	.ReverbSoundEffect ReverbSoundEffect?
+	.PitchShiftSoundEffect PitchShiftSoundEffect?
+	.FlangeSoundEffect FlangeSoundEffect?
+	.EqualizerSoundEffect EqualizerSoundEffect?
+	.EchoSoundEffect EchoSoundEffect?
+	.DistortionSoundEffect DistortionSoundEffect?
+	.CompressorSoundEffect CompressorSoundEffect?
+	.ChorusSoundEffect ChorusSoundEffect?
+	
+	Defines the possible child sound effects that can be attached to a sound instance, allowing for enhanced audio manipulation and variation.
+]=]
+export type SoundChildrenInstanced = Types.SoundChildrenInstanced
+
+------------------------------------------------------------------------------------------------------------------------
+
+--[=[
+	@type SoundGroups {[string]: SoundGroup}
+	@within VluxySF
+
+	@tag Instanced
+
+	Defines the type of a sound group instance.
+]=]
+export type SoundGroups = Types.SoundGroups
+
+----------------------------------------------------------------------------------------------------------------
+
+--[=[
+	@type SoundDefinitions {[string]: SoundDefinition}
+	@within VluxySF
+
+	@tag Serialized
+
+	Defines the sound definitions of the system as a dictionary of sound names to their corresponding sound data.
+]=]
+export type SoundDefinitions = Types.SoundDefinitions
+
+--[=[
+	@interface SoundDefinition
+	@within VluxySF
+
+	@tag Serialized
+
+	.Properties SoundSerialized -- The properties of the sound itself, such as SoundId, Volume, etc.
+	.Effects SoundChildrenSerialized -- The sound effects of the sound, organized by class name.
+
+	Defines the properties and sound effects of a sound.
+]=]
+export type SoundDefinition = Types.SoundDefinition
+
+------------------------------------------------------------------------------------------------------------------------
+
+--[=[
+	@interface SoundChildrenSerialized
+	@within VluxySF
+
+	@tag Serialized
+
+	.ChorusSoundEffect ChorusSoundEffectSerialized?
+	.CompressorSoundEffect CompressorSoundEffectSerialized?
+	.DistortionSoundEffect DistortionSoundEffectSerialized?
+	.EchoSoundEffect EchoSoundEffectSerialized?
+	.EqualizerSoundEffect EqualizerSoundEffectSerialized?
+	.FlangeSoundEffect FlangeSoundEffectSerialized?
+	.PitchShiftSoundEffect PitchShiftSoundEffectSerialized?
+	.ReverbSoundEffect ReverbSoundEffectSerialized?
+	.TremoloSoundEffect TremoloSoundEffectSerialized?
+
+	Defines the sound effects of a sound as a dictionary of class names to their corresponding properties.
+]=]
+export type SoundChildrenSerialized = Types.SoundChildrenSerialized
+
+------------------------------------------------------------------------------------------------------------------------
+
+--[=[
+	@type SoundSerialized {[string]: any}
+	@within VluxySF
+
+	@tag Serialized
+
+	Defines the properties of a sound as a dictionary of property names and values.
+]=]
+export type SoundSerialized = Types.SoundSerialized
+
+--[=[
+	@type ChorusSoundEffectSerialized {[string]: any}
+	@within VluxySF
+
+	@tag Serialized
+
+	Defines the properties of a ChorusSoundEffect as a dictionary of property names and values.
+]=]
+export type ChorusSoundEffectSerialized = Types.ChorusSoundEffectSerialized
+
+--[=[
+	@type CompressorSoundEffectSerialized {[string]: any}
+	@within VluxySF
+
+	@tag Serialized
+
+	Defines the properties of a CompressorSoundEffect as a dictionary of property names and values.
+]=]
+export type CompressorSoundEffectSerialized = Types.CompressorSoundEffectSerialized
+
+--[=[
+	@type DistortionSoundEffectSerialized {[string]: any}
+	@within VluxySF
+
+	@tag Serialized
+
+	Defines the properties of a DistortionSoundEffect as a dictionary of property names and values.
+]=]
+export type DistortionSoundEffectSerialized = Types.DistortionSoundEffectSerialized
+
+--[=[
+	@type EchoSoundEffectSerialized {[string]: any}
+	@within VluxySF
+
+	@tag Serialized
+
+	Defines the properties of an EchoSoundEffect as a dictionary of property names and values.
+]=]
+export type EchoSoundEffectSerialized = Types.EchoSoundEffectSerialized
+
+--[=[
+	@type EqualizerSoundEffectSerialized {[string]: any}
+	@within VluxySF
+
+	@tag Serialized
+
+	Defines the properties of an EqualizerSoundEffect as a dictionary of property names and values.
+]=]
+export type EqualizerSoundEffectSerialized = Types.EqualizerSoundEffectSerialized
+
+--[=[
+	@type FlangeSoundEffectSerialized {[string]: any}
+	@within VluxySF
+	
+	@tag Serialized
+
+	Defines the properties of a FlangeSoundEffect as a dictionary of property names and values.
+]=]
+export type FlangeSoundEffectSerialized = Types.FlangeSoundEffectSerialized
+
+--[=[
+	@type PitchShiftSoundEffectSerialized {[string]: any}
+	@within VluxySF
+
+	@tag Serialized
+
+	Defines the properties of a PitchShiftSoundEffect as a dictionary of property names and values.
+]=]
+export type PitchShiftSoundEffectSerialized = Types.PitchShiftSoundEffectSerialized
+
+--[=[
+	@type ReverbSoundEffectSerialized {[string]: any}
+	@within VluxySF
+
+	@tag Serialized
+
+	Defines the properties of a ReverbSoundEffect as a dictionary of property names and values.
+]=]
+export type ReverbSoundEffectSerialized = Types.ReverbSoundEffectSerialized
+
+--[=[
+	@type TremoloSoundEffectSerialized {[string]: any}
+	@within VluxySF
+
+	@tag Serialized
+
+	Defines the properties of a TremoloSoundEffect as a dictionary of property names and values.
+]=]
+export type TremoloSoundEffectSerialized = Types.TremoloSoundEffectSerialized
 
 ----------------------------------------------------------------------------------------------------------------
 
@@ -360,13 +513,13 @@ end
 	@tag Fetcher
 	@tag RequiresSchema
 
-	@param location -- The direct location of the `SoundDefinition` or the name of the SoundDefinition.
+	@param location string -- The direct location of the `SoundDefinition` or the name of the `SoundDefinition`.
 
 	@return Sound? -- The fetched sound instance if found, otherwise nil.
 	
 	Finds the specified `SoundDefinition` and gives back a playable `Sound` if it exists.
 ]=]
-function Sounds.Fetch(location: string): Sound?
+function Sounds.Fetch(location: string): Types.SoundDefinitionInstanced?
 	schemaFailCheck()
 
 	local isDirect = #location:split("/") ~= 1
@@ -398,14 +551,14 @@ end
 	@tag Fetcher
 	@tag RequiresSchema
 
-	@param groupName -- The name of the sound group to search within.
-	@param name -- The name of the `SoundDefinition` to find within the specified sound group.
+	@param groupName string -- The name of the sound group to search within.
+	@param name string -- The name of the `SoundDefinition` to find within the specified sound group.
 
 	@return Sound? -- The fetched sound instance if found, otherwise nil.
 
 	Similar to `Fetch`, but is more accurate than fetching by name but less accurate then the full location. A middle ground so you can write less and still somewhat specify!
 ]=]
-function Sounds.FetchFromGroup(groupName: string, name: string): Sound?
+function Sounds.FetchFromGroup(groupName: string, name: string): Types.SoundDefinitionInstanced?
 	schemaFailCheck()
 
 	local location = Fetching.FromSoundGroup(soundSchema, groupName, name)
@@ -437,7 +590,9 @@ end
 
 	Fetches a sound, sets it up for one-time playback, and optionally waits for it to load before playing. The sound will be automatically cleaned up after it finishes playing.
 ]=]
-function Sounds.FetchPlayOnce(name: string, parent: Instance?, waitOnLoad: boolean?): Sound?
+function Sounds.FetchPlayOnce(name: string, parent: Instance?, waitOnLoad: boolean?): Types.SoundDefinitionInstanced?
+	schemaFailCheck()
+
 	local sound = Sounds.Fetch(name)
 
 	if not sound then
@@ -492,14 +647,14 @@ end
 
 	@tag Conversions
 
-	@param soundDefinition SoundDefinition -- The SoundDefinition to convert.
+	@param definition SoundDefinition -- The SoundDefinition to convert.
 
 	@return Sound -- The resulting Sound instance based on the properties and effects defined in the provided SoundDefinition.
 
 	Converts a SoundDefinition back into a playable Roblox Sound instance.
 ]=]
-function Sounds.FromDefinition(soundDefinition: SoundDefinition): Sound
-	return Conversions.DefinitionToSound(soundDefinition)
+function Sounds.FromDefinition(definition: SoundDefinition): Types.SoundDefinitionInstanced
+	return Conversions.DefinitionToSound(definition)
 end
 
 ----------------------------------------------------------------------------------------------------------------

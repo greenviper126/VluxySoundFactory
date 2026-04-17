@@ -47,8 +47,8 @@ local usesStrictNaming = true
 --[[
     Sets grouped sounds from a folder into the sound definitions.
 
-    @param soundDefinitions Types.SoundDefinitions - The sound definitions dictionary to add the sounds to.
-    @param childFolder Instance - The folder containing the sounds to add.
+    @param soundDefinitions SoundDefinitions -- The sound definitions dictionary to add the sounds to.
+    @param childFolder Instance -- The folder containing the sounds to add.
 ]]
 local function setGroupedSounds(soundDefinitions: Types.SoundDefinitions, childFolder: Instance)
 	local names = {}
@@ -84,9 +84,9 @@ end
 --[[
     Creates sound definitions for all sounds in the given folder and organizes them by group.
 
-    @param soundFolder Configuration - The folder containing sound group folders and unattached sounds.
+    @param soundFolder Configuration -- The folder containing sound group folders and unattached sounds.
 
-    @return Types.SoundDefinitions - The created sound definitions dictionary.
+    @return SoundDefinitions -- The created sound definitions dictionary.
 ]]
 local function createSoundDefinitions(soundFolder: Configuration): Types.SoundDefinitions
 	local soundDefinitions: Types.SoundDefinitions = {}
@@ -105,7 +105,7 @@ end
 
 	Creates unattached sound folder and converts all sounds into sound definitions organized by group, then sets up a RemoteFunction for clients to request the sound schema.
 
-	@param soundFolder Configuration - The folder containing sound group folders and unattached sounds.
+	@param soundFolder Configuration -- The folder containing sound group folders and unattached sounds.
 ]]
 local function initializeServerSoundSystem(soundFolder: Configuration)
 	--set groups
@@ -146,8 +146,8 @@ local ServerData = {}
 
 	soundFolder should be on the server side.
 	
-	@param soundFolder -- The folder containing sound group folders and unattached sounds.
-	@param strictNaming -- Optional parameter to enforce strict naming of sounds within groups, default is true. If true, duplicate sound names within the same group will trigger a warning.
+	@param soundFolder Configuration -- The folder containing sound group folders and unattached sounds.
+	@param strictNaming boolean -- Optional parameter to enforce strict naming of sounds within groups, default is true. If true, duplicate sound names within the same group will trigger a warning.
 ]]
 function ServerData._initServer(soundFolder: Configuration | Folder, strictNaming: boolean?)
 	if RunService:IsClient() then
