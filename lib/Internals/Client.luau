@@ -75,7 +75,12 @@ local function setPreloadSounds(timeout: number?)
 	end
 
 	task.spawn(function()
+		local t = os.clock()
+
 		ContentProvider:PreloadAsync(preloadSounds, callback)
+
+		print(`Preloaded {#preloadSounds} sounds in {os.clock() - t} seconds!`)
+
 		if not complete then
 			return
 		end
@@ -95,6 +100,7 @@ local function setPreloadSounds(timeout: number?)
 
 	complete.Event:Wait()
 	complete:Destroy()
+	complete = nil :: any
 
 	--we only needed the instances to preload.
 	for _, sound in ipairs(preloadSounds) do
