@@ -303,6 +303,8 @@ function Sounds._initClient(timeout: number?)
 	Tables.DeepFreeze(soundSchema)
 
 	isInitialized = true
+
+	print(`[vluxysf]: The sound schema has been initialized and is ready for use!`)
 end
 
 ----------------------------------------------------------------------------------------------------------------

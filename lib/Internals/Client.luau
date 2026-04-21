@@ -79,7 +79,7 @@ local function setPreloadSounds(timeout: number?)
 
 		ContentProvider:PreloadAsync(preloadSounds, callback)
 
-		print(`Preloaded {#preloadSounds} sounds in {os.clock() - t} seconds!`)
+		print(`[vluxysf]: Preloaded {#preloadSounds} sounds in {os.clock() - t} seconds!`)
 
 		if not complete then
 			return
