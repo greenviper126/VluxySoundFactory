@@ -686,6 +686,63 @@ function Sounds.PreloadSelected(...: string | Sound | SoundDefinition)
 end
 
 ----------------------------------------------------------------------------------------------------------------
+--PRESETS-------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------
+
+--[[
+	Defines preset functions that can be applied to sounds to modify their properties in specific ways, such as adding natural jitter to make them sound more dynamic and less repetitive.
+]]
+Sounds.Presets = {}
+
+--[=[
+	@within VluxySF
+
+	@tag Preset
+
+	@param center number? -- The central value around which the jitter will occur (default: 1).
+	@param spread number? -- The maximum deviation from the center value (default: 0.1).
+	@param parent Instance? -- The parent instance to which the sound will be attached after applying the preset.
+
+	@return (Sound) -> () -- A preset function that applies natural jitter to a sound's volume and playback speed, creating more dynamic and less repetitive audio effects.
+
+	applys a unitLog jitter to volume and pitch with an option to set the parent.
+]=]
+function Sounds.Presets.NaturalJitter(center: number?, spread: number?, parent: Instance?): (Sound) -> ()
+	local jitter = Sounds.JitterUnitLog(center or 1, spread or 0.1)
+
+	return function(sound: Sound)
+		sound.Volume *= jitter()
+		sound.PlaybackSpeed *= jitter()
+
+		sound.Parent = parent
+	end
+end
+
+--[=[
+	@within VluxySF
+
+	@tag Preset
+
+	@param center number? -- The central value around which the jitter will occur (default: 1).
+	@param spread number? -- The maximum deviation from the center value (default: 0.1).
+	@param parent Instance? -- The parent instance to which the sound will be attached after applying the preset.
+
+	@return (Sound) -> () -- A preset function that applies random jitter to a sound's volume and playback speed, creating more dynamic and less repetitive audio effects.
+
+	applys a random jitter to volume and pitch with an option to set the parent.
+]=]
+function Sounds.Presets.RandomJitter(center: number?, spread: number?, parent: Instance?): (Sound) -> ()
+	local jitter = Sounds.Jitter(center or 1, spread or 0.1)
+
+	return function(sound: Sound)
+		sound.Volume *= jitter()
+		sound.PlaybackSpeed *= jitter()
+
+		sound.Parent = parent
+	end
+end
+
+----------------------------------------------------------------------------------------------------------------
 --MISC----------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------
 
