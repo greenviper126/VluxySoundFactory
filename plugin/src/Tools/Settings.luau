@@ -1,0 +1,94 @@
+--!strict
+
+local onPluginEnabled = Instance.new("BindableEvent")
+local onPortChanged = Instance.new("BindableEvent")
+local onSoundsLocationChanged = Instance.new("BindableEvent")
+
+local plugin = plugin or script:FindFirstAncestorWhichIsA("Plugin") :: Plugin
+
+-- This module handles the plugin's settings.
+local Settings = {}
+
+--[[enable plugin]]
+
+--checks plugin enable state
+function Settings.GetPluginEnabled(): boolean
+	if plugin:GetSetting("EnabledPlugin") == nil then
+		plugin:SetSetting("EnabledPlugin", true)
+	end
+
+	if Settings.GetSoundsLocation() == nil then
+		plugin:SetSetting("EnabledPlugin", false)
+	end
+
+	return plugin:GetSetting("EnabledPlugin")
+end
+
+--sets plugin enable state
+function Settings.SetPluginEnabled(enabled: boolean)
+	plugin:SetSetting("EnabledPlugin", enabled)
+
+	onPluginEnabled:Fire(enabled)
+end
+
+--returns event that fires when plugin enable state changes, passing new state as argument
+function Settings.ListenPluginEnabled(): RBXScriptSignal
+	return onPluginEnabled.Event
+end
+
+--toggles plugin enable state and returns new state
+function Settings.TogglePluginEnabled(): boolean
+	local currentState = Settings.GetPluginEnabled()
+	Settings.SetPluginEnabled(not currentState)
+
+	return not currentState
+end
+
+--[[port]]
+
+--returns default port number
+function Settings.GetDefaultPort(): number
+	return 7842
+end
+
+--checks port, if not set, sets to default (7842).
+function Settings.GetPort(): number
+	if plugin:GetSetting("Port") == nil then
+		plugin:SetSetting("Port", Settings.GetDefaultPort())
+	end
+
+	return plugin:GetSetting("Port")
+end
+
+--sets port number
+function Settings.SetPort(port: number)
+	plugin:SetSetting("Port", port)
+
+	onPortChanged:Fire(port)
+end
+
+--returns event that fires when port changes, passing new port as argument
+function Settings.ListenPortChanged(): RBXScriptSignal
+	return onPortChanged.Event
+end
+
+--[[Sound Location]]
+
+--sound location
+function Settings.GetSoundsLocation(): string?
+	return plugin:GetSetting("FileLocation")
+end
+
+--sets sound location
+function Settings.SetSoundsLocation(location: string)
+	plugin:SetSetting("FileLocation", location)
+
+	onSoundsLocationChanged:Fire(location)
+end
+
+--returns event that fires when sound location changes, passing new location as argument
+function Settings.ListenSoundsLocationChanged(): RBXScriptSignal
+	return onSoundsLocationChanged.Event
+end
+
+return Settings

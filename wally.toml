@@ -12,6 +12,7 @@ exclude = [
     "assets",
     "docs",
     "build",
+    "plugin",
     "PackageTests",
     "Tests",
     "moonwave.toml",
